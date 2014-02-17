@@ -132,22 +132,33 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
 {
   //file --> parseLoadLine --> load
   RecordFile rf;   // RecordFile containing the table
-  ifstream infile(loadfile);  //Read file
-
+  RecordId   rid;  // record cursor for table scanning
+  ifstream infile(loadfile.c_str());  //Read file; Must use c_str() since it's C++03
+  
   RC     rc;
   int    key;     
   string line, value;
 
-  //Get each line
-  while (getline(infile, line))
-  {
-    //Get key and value by using parseLoadLine()
-    parseLoadLine(line, key, value);
+  //Open the table file
+  //Open a file in read or write mode. (r/w)
+  //When opened in 'w' mode, if the file does not exist, it is created.
+  if ((rc = rf.open(table + ".tbl", 'w')) == 0) {
+    //Get each line from loadfile
+    while (getline(infile, line))
+    {
+      //Get key and value by using parseLoadLine()
+      //Get the last record id. Note rid is an instant of class RecordId
+      parseLoadLine(line, key, value);
+      rid = rf.endRid();
+      rc = rf.append(key, value, rid);
+      if (rc != 0) return rc;
+    }
+    return rc;
   }
 
-
-
-  return 0;
+  //Close the table file
+  rf.close();
+  return rc;
 }
 
 RC SqlEngine::parseLoadLine(const string& line, int& key, string& value)
