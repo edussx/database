@@ -130,7 +130,22 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
 RC SqlEngine::load(const string& table, const string& loadfile, bool index)
 {
-  /* your code here */
+  //file --> parseLoadLine --> load
+  RecordFile rf;   // RecordFile containing the table
+  ifstream infile(loadfile);  //Read file
+
+  RC     rc;
+  int    key;     
+  string line, value;
+
+  //Get each line
+  while (getline(infile, line))
+  {
+    //Get key and value by using parseLoadLine()
+    parseLoadLine(line, key, value);
+  }
+
+
 
   return 0;
 }
