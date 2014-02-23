@@ -12,6 +12,20 @@
 
 #include "RecordFile.h"
 #include "PageFile.h"
+#include <list>
+using std::list
+
+struct Key
+{
+    int key;
+    RecordId rid;
+};
+
+struct Node
+{
+    list<Key> myKeys;
+    int maxSize;
+};
 
 /**
  * BTLeafNode: The class representing a B+tree leaf node.
@@ -102,6 +116,7 @@ class BTLeafNode {
     * that contains the node.
     */
     char buffer[PageFile::PAGE_SIZE];
+    Node leafNode;
 }; 
 
 
@@ -180,6 +195,7 @@ class BTNonLeafNode {
     * that contains the node.
     */
     char buffer[PageFile::PAGE_SIZE];
+    Node nonleaf;
 }; 
 
 #endif /* BTNODE_H */
