@@ -35,7 +35,7 @@ RC BTLeafNode::write(PageId pid, PageFile& pf)
  * @return the number of keys in the node
  */
 int BTLeafNode::getKeyCount()
-{ 	return myKeys.size(); }
+{ 	return 0; }
 
 /*
  * Insert a (key, rid) pair to the node.
