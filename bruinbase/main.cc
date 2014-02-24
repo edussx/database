@@ -14,15 +14,24 @@
 #include <iostream>
 using namespace std;
 
+void setBuffer(char* buff, int value, int pos)
+{
+	char* position = buff + sizeof(int)*pos;
+	memcpy(position, (char*) &value, 4);
+}
+
 void test()
 {
 	BTLeafNode test1;
+
 	int m_PageId = 10;
 	int m_KeyCount = 1;
-	memcpy(test1.buffer, (char*)(&m_PageId), 4);
+	//memcpy(test1.buffer, (char*)(&m_PageId), 4);
 	memcpy(test1.buffer+4, (char*)(&m_KeyCount), 4);	
 
-	cout << "next ptr should be 10: " << test1.getNextNodePtr() << endl;
+	setBuffer(test1.buffer, 100 ,0);
+
+	cout << "next ptr should be 100: " << test1.getNextNodePtr() << endl;
 	cout << "key count should be 1: " << test1.getKeyCount() << endl;
 
 	test1.setNextNodePtr(5);
