@@ -79,10 +79,12 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
  */
 RC BTLeafNode::locate(int searchKey, int& eid)
 { 
+	//initial pos began after pageid and keycount
 	char* init = buffer + sizeof(PageId) + sizeof(int);
 
 	for (int i=0; i<this->getKeyCount(); i++)
 	{
+		//init + 0*12 +8, init + 1*12 +8, ...
 		if (*(int*)(init + i * LEAFNODEOFFSET +sizeof(RecordId)) < searchKey)
 			continue;
 		else
@@ -106,13 +108,13 @@ RC BTLeafNode::locate(int searchKey, int& eid)
 //pp: in RecordID, first 4 is pid and next 4 is sid
 RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
 {
-	 char* RecordIdAddress_pid = buffer + sizeof(PageId) + sizeof(int) + eid * LEAFNODEOFFSET;
+	char* RecordIdAddress_pid = buffer + sizeof(PageId) + sizeof(int) + eid * LEAFNODEOFFSET;
 	rid.pid = *((int*)RecordIdAddress_pid);
 	char* RecordIdAddress_sid = RecordIdAddress_pid + sizeof(int);
 	rid.sid = *((int*)RecordIdAddress_sid);
 	char* KeyAddress = RecordIdAddress_sid + sizeof(int);
 	key = *((int*)KeyAddress);  	 
-return 0; 
+	return 0; 
 }
 
 /*
