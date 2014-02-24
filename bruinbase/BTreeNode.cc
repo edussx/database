@@ -87,7 +87,15 @@ RC BTLeafNode::locate(int searchKey, int& eid)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
-{ return 0; }
+{
+	char* RecordIdAddress_pid = buffer + sizeof(PageID) + sizeof(int) + eid * LEAFNODEOFFSET;
+	rid.pid = *((int*)RecordIdAddress_pid);
+	char* RecordIdAddress_sid = RecordIdAddress_pid + sizeof(int);
+	rid.sid = *((int*)RecordIdAddress_sid);
+	char* KeyAddress = RecordIdAddress_sid + sizeof(int);
+	key = *((int*)KeyAddress);  	 
+return 0; 
+}
 
 /*
  * Return the pid of the next slibling node.
