@@ -31,12 +31,29 @@ void test()
 
 	setBuffer(test1.buffer, 100 ,0);
 
-	cout << "next ptr should be 100: " << test1.getNextNodePtr() << endl;
-	cout << "key count should be 1: " << test1.getKeyCount() << endl;
+	// cout << "next ptr should be 100: " << test1.getNextNodePtr() << endl;
+	// cout << "key count should be 1: " << test1.getKeyCount() << endl;
 
-	test1.setNextNodePtr(5);
-	cout << "new next ptr should be 5: " << test1.getNextNodePtr() << endl;
+	// test1.setNextNodePtr(5);
+	// cout << "new next ptr should be 5: " << test1.getNextNodePtr() << endl;
 
+
+}
+
+void test2()
+{
+	BTLeafNode test1;
+	setBuffer(test1.buffer, 2, 2);
+	setBuffer(test1.buffer, 3, 3);
+	setBuffer(test1.buffer, 4, 4);
+
+	RecordId id;
+	int key;
+
+	test1.readEntry(0, key, id);
+
+	cout << "key is: " << key << endl;
+	cout << "pid is: "<< id.pid << " sid is: " << id.sid << endl;
 }
 
 int main()
@@ -44,7 +61,7 @@ int main()
   // run the SQL engine taking user commands from standard input (console).
   //SqlEngine::run(stdin);
 
-  test();
-
+  //test();
+  test2();
   return 0;
 }

@@ -77,7 +77,10 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::locate(int searchKey, int& eid)
-{ return 0; }
+{ 
+
+	return 0; 
+}
 
 /*
  * Read the (key, rid) pair from the eid entry.
@@ -88,7 +91,7 @@ RC BTLeafNode::locate(int searchKey, int& eid)
  */
 RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
 {
-	char* RecordIdAddress_pid = buffer + sizeof(PageID) + sizeof(int) + eid * LEAFNODEOFFSET;
+	 char* RecordIdAddress_pid = buffer + sizeof(PageId) + sizeof(int) + eid * LEAFNODEOFFSET;
 	rid.pid = *((int*)RecordIdAddress_pid);
 	char* RecordIdAddress_sid = RecordIdAddress_pid + sizeof(int);
 	rid.sid = *((int*)RecordIdAddress_sid);
