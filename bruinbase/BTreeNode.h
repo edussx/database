@@ -15,6 +15,10 @@
 
 #define MAXLEAFNODESIZE 60
 #define MAXNONLEAFNODESIZE 60
+
+#define LEAFNODEOFFSET (sizeof(RecordID) + sizeof(int))// 12
+#define NONLEAFNODEOFFSET (sizeof(PageID) + sizeof(int)) // 8
+
 /**
  * BTLeafNode: The class representing a B+tree leaf node.
  */
