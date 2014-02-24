@@ -35,7 +35,11 @@ RC BTLeafNode::write(PageId pid, PageFile& pf)
  * @return the number of keys in the node
  */
 int BTLeafNode::getKeyCount()
-{ 	return 0; }
+{ 	
+	char* KeyCountAddress = buff + sizeof(PageID);
+	int KeyCount = *((int*)KeyCountAddress); 
+	return KeyCount; 
+}
 
 /*
  * Insert a (key, rid) pair to the node.
@@ -89,7 +93,11 @@ RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
  * @return the PageId of the next sibling node 
  */
 PageId BTLeafNode::getNextNodePtr()
-{ return 0; }
+{
+	char* NextNodeAddress = buff;
+	int NextPtr = *((int*)NextNodeAddress); 
+	return NextPtr; 
+}
 
 /*
  * Set the pid of the next slibling node.
