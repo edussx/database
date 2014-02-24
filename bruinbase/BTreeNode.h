@@ -13,6 +13,8 @@
 #include "RecordFile.h"
 #include "PageFile.h"
 
+#define MAXLEAFNODESIZE 60
+#define MAXNONLEAFNODESIZE 60
 /**
  * BTLeafNode: The class representing a B+tree leaf node.
  */
