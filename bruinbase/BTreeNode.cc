@@ -107,7 +107,7 @@ PageId BTLeafNode::getNextNodePtr()
  */
 RC BTLeafNode::setNextNodePtr(PageId pid)
 {
-	memcpy(this->buffer, &pid, sizeof(int));
+	memcpy(this->buffer, (char*) &pid, sizeof(int));
 	return 0; 
 }
 

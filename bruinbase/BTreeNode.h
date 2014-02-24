@@ -12,6 +12,7 @@
 
 #include "RecordFile.h"
 #include "PageFile.h"
+#include <cstring>
 
 #define MAXLEAFNODESIZE 60
 #define MAXNONLEAFNODESIZE 60
@@ -102,7 +103,7 @@ class BTLeafNode {
     */
     RC write(PageId pid, PageFile& pf);
 
-  private:
+  //private:
    /**
     * The main memory buffer for loading the content of the disk page 
     * that contains the node.

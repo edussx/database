@@ -9,11 +9,33 @@
  
 #include "Bruinbase.h"
 #include "SqlEngine.h"
+#include "BTreeNode.h"
+#include <cstring>
+#include <iostream>
+using namespace std;
+
+void test()
+{
+	BTLeafNode test1;
+	int m_PageId = 10;
+	int m_KeyCount = 1;
+	memcpy(test1.buffer, (char*)(&m_PageId), 4);
+	memcpy(test1.buffer+4, (char*)(&m_KeyCount), 4);	
+
+	cout << "next ptr should be 10: " << test1.getNextNodePtr() << endl;
+	cout << "key count should be 1: " << test1.getKeyCount() << endl;
+
+	test1.setNextNodePtr(5);
+	cout << "new next ptr should be 5: " << test1.getNextNodePtr() << endl;
+
+}
 
 int main()
 {
   // run the SQL engine taking user commands from standard input (console).
-  SqlEngine::run(stdin);
+  //SqlEngine::run(stdin);
+
+  test();
 
   return 0;
 }
