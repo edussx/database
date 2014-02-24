@@ -36,9 +36,10 @@ RC BTLeafNode::write(PageId pid, PageFile& pf)
  */
 int BTLeafNode::getKeyCount()
 { 	
-	char* KeyCountAddress = buff + sizeof(PageID);
-	int KeyCount = *((int*)KeyCountAddress); 
-	return KeyCount; 
+
+	char* keycountaddress = buffer + sizeof(PageId);
+	int keycount = *((int*)keycountaddress); 
+	return keycount; 
 }
 
 /*
@@ -94,7 +95,7 @@ RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
  */
 PageId BTLeafNode::getNextNodePtr()
 {
-	char* NextNodeAddress = buff;
+	char* NextNodeAddress = buffer;
 	int NextPtr = *((int*)NextNodeAddress); 
 	return NextPtr; 
 }
