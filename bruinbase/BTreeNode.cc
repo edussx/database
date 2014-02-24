@@ -34,6 +34,7 @@ RC BTLeafNode::write(PageId pid, PageFile& pf)
  * Return the number of keys stored in the node.
  * @return the number of keys in the node
  */
+//pp: starting from offset 4 is KeyCount
 int BTLeafNode::getKeyCount()
 { 	
 
@@ -100,6 +101,9 @@ RC BTLeafNode::locate(int searchKey, int& eid)
  * @param rid[OUT] the RecordId from the entry
  * @return 0 if successful. Return an error code if there is an error.
  */
+//pp: readEntry, starting from 0 is NextNode PageId, starting from 4 is KeyCount
+//pp: starting from 8 is entry 0, each entry contains 12 bytes, first 8 is for RecordID, next 4 is for Key
+//pp: in RecordID, first 4 is pid and next 4 is sid
 RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
 {
 	 char* RecordIdAddress_pid = buffer + sizeof(PageId) + sizeof(int) + eid * LEAFNODEOFFSET;
@@ -115,6 +119,7 @@ return 0;
  * Return the pid of the next slibling node.
  * @return the PageId of the next sibling node 
  */
+//pp: starting from offset 0 is NextNode PageId
 PageId BTLeafNode::getNextNodePtr()
 {
 	char* NextNodeAddress = buffer;
