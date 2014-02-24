@@ -78,8 +78,19 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
  */
 RC BTLeafNode::locate(int searchKey, int& eid)
 { 
+	char* init = buffer + sizeof(PageId) + sizeof(int);
 
-	return 0; 
+	for (int i=0; i<this->getKeyCount(); i++)
+	{
+		if (*(int*)(init + i * LEAFNODEOFFSET +sizeof(RecordId)) < searchKey)
+			continue;
+		else
+		{
+			eid = i;
+			return 0;
+		}
+	}
+	return RC_NO_SUCH_RECORD; 
 }
 
 /*

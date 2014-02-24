@@ -43,6 +43,7 @@ void test()
 void test2()
 {
 	BTLeafNode test1;
+	setBuffer(test1.buffer, 1, 1);
 	setBuffer(test1.buffer, 2, 2);
 	setBuffer(test1.buffer, 3, 3);
 	setBuffer(test1.buffer, 4, 4);
@@ -54,6 +55,11 @@ void test2()
 
 	cout << "key is: " << key << endl;
 	cout << "pid is: "<< id.pid << " sid is: " << id.sid << endl;
+
+	int eid;
+	test1.locate(4, eid);
+
+	cout << "it should be 0: " << eid << endl;
 }
 
 int main()
