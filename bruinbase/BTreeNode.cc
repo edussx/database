@@ -49,6 +49,17 @@ int BTLeafNode::getKeyCount()
 	return keycount; 
 }
 
+/**
+* Set the number of keys stored in the node.
+* @Set the number of keys in the node
+*/
+void BTLeafNode::setKeyCount(const int keycount)
+{
+	char* keycountaddress =  buffer + sizeof(PageId);
+	memcpy(keycountaddress, &keycount, sizeof(int));
+}
+
+
 /*
  * Insert a (key, rid) pair to the node.
  * @param key[IN] the key to insert
@@ -64,12 +75,13 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 	//Insertion begin
 	int eid;
 	rc = locate(key, eid);
+	char * init = buffer + sizeof(PageId) + sizeof(int);;
 	if (rc == RC_NO_SUCH_RECORD)
 	{
 		//Inserted (key, rid) is at the end of the node
 		//cout << eid << endl;
 		//Initial pos began after pageid and keycount
-		char* init = buffer + sizeof(PageId) + sizeof(int);
+		//init = buffer + sizeof(PageId) + sizeof(int);
 		//Insert rid.pid and rid.sid
 		//*(int*)(init + eid * LEAFNODEOFFSET) = rid.pid;
 		//(char*) (init + eid * LEAFNODEOFFSET) = (char*) &(rid.pid);
@@ -81,9 +93,23 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 		//*(int*)(init + eid * LEAFNODEOFFSET + sizeof(RecordId)) = key;
 		//(char*) (init + eid * LEAFNODEOFFSET + sizeof(RecordId)) = (char*) &key;
 		memcpy(init + eid * LEAFNODEOFFSET + sizeof(RecordId), (char*) &key, sizeof(int));
+	}
+	else
+	{
+		int temp_size = LEAFNODEOFFSET*(getKeyCount() - eid);
+		char* temp = new char[temp_size];
+		//
+		memcpy((char*)temp, (char*)(init + eid * LEAFNODEOFFSET), temp_size);
+		memcpy((char*)(init + (eid + 1) * LEAFNODEOFFSET ), (char*)temp, temp_size);
 		
+		memcpy(init + eid * LEAFNODEOFFSET, (char*) &(rid.pid), sizeof(int));
+		memcpy(init + eid * LEAFNODEOFFSET + sizeof(int), (char*) &(rid.sid), sizeof(int));
+		memcpy(init + eid * LEAFNODEOFFSET + sizeof(RecordId), (char*) &key, sizeof(int));
+		delete [] temp;
+
 	}
 	//Inserted (key, rid) is at the mid of the node
+	setKeyCount(getKeyCount() + 1);
 
 	return rc;
 }

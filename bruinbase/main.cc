@@ -97,7 +97,8 @@ void test3()
 	testid.sid = 7;
 
 	test1.insert(8, testid);
-	setBuffer(test1.buffer, 2, 1);
+	//setBuffer(test1.buffer, 2, 1);
+	test1.setKeyCount(2);
 	RecordId id;
 	int key;
 
@@ -123,6 +124,46 @@ void test4()
 	cout << "it should be 1: " << eid << endl;
 }
 
+void test5()
+{
+	RecordId id;
+	int key;
+
+	BTLeafNode test1;
+	setBuffer(test1.buffer, 0, 0);
+	setBuffer(test1.buffer, 1, 1);
+
+	setBuffer(test1.buffer, 2, 2);
+	setBuffer(test1.buffer, 3, 3);
+	setBuffer(test1.buffer, 4, 4);
+
+	RecordId testid1;
+	testid1.pid = 9;
+	testid1.sid = 10;
+	test1.insert(11, testid1);
+	test1.readEntry(1, key, id);
+	cout << "key should be 11: " << key << endl;
+	cout << "pid should be 9: " << id.pid << " sid should be 10: " << id.sid << endl;
+
+
+	RecordId testid2;
+	testid2.pid = 6;
+	testid2.sid = 7;
+	test1.insert(8, testid2);
+	test1.readEntry(1, key, id);
+	cout << "key should be 8: " << key << endl;
+	cout << "pid should be 6: " << id.pid << " sid should be 7: " << id.sid << endl;
+
+	RecordId testid3;
+	testid3.pid = 5;
+	testid3.sid = 5;
+	test1.insert(5, testid3);
+	test1.readEntry(1, key, id);
+	cout << "key should be 5: " << key << endl;
+	cout << "pid should be 5: " << id.pid << " sid should be 5: " << id.sid << endl;
+}
+
+
 int main()
 {
   // run the SQL engine taking user commands from standard input (console).
@@ -130,7 +171,8 @@ int main()
 
   	//test();
   	//test2();
-  	test3();
+  	//test3();
 	//test4();
+	test5();
   return 0;
 }
