@@ -43,10 +43,22 @@ void test()
 void test2()
 {
 	BTLeafNode test1;
-	setBuffer(test1.buffer, 1, 1);
+	setBuffer(test1.buffer, 0, 0);
+	setBuffer(test1.buffer, 3, 1);
+
 	setBuffer(test1.buffer, 2, 2);
 	setBuffer(test1.buffer, 3, 3);
 	setBuffer(test1.buffer, 4, 4);
+
+	//cout << test1.getKeyCount() << endl;
+
+	setBuffer(test1.buffer, 5, 5);
+	setBuffer(test1.buffer, 6, 6);
+	setBuffer(test1.buffer, 7, 7);
+
+	setBuffer(test1.buffer, 8, 8);
+	setBuffer(test1.buffer, 9, 9);
+	setBuffer(test1.buffer, 10, 10);
 
 	RecordId id;
 	int key;
@@ -57,9 +69,58 @@ void test2()
 	cout << "pid is: "<< id.pid << " sid is: " << id.sid << endl;
 
 	int eid;
-	test1.locate(4, eid);
+	test1.locate(7, eid);
 
-	cout << "it should be 0: " << eid << endl;
+	cout << "it should be 2: " << eid << endl;
+}
+
+void test3()
+{
+	BTLeafNode test1;
+	setBuffer(test1.buffer, 0, 0);
+	setBuffer(test1.buffer, 1, 1);
+
+	setBuffer(test1.buffer, 2, 2);
+	setBuffer(test1.buffer, 3, 3);
+	setBuffer(test1.buffer, 4, 4);
+
+	// setBuffer(test1.buffer, 5, 5);
+	// setBuffer(test1.buffer, 6, 6);
+	// setBuffer(test1.buffer, 7, 7);
+
+	// setBuffer(test1.buffer, 8, 8);
+	// setBuffer(test1.buffer, 9, 9);
+	// setBuffer(test1.buffer, 10, 10);
+
+	RecordId testid;
+	testid.pid = 6;
+	testid.sid = 7;
+
+	test1.insert(8, testid);
+	setBuffer(test1.buffer, 2, 1);
+	RecordId id;
+	int key;
+
+	test1.readEntry(1, key, id);
+	cout << "key should be 8: " << key << endl;
+	cout << "pid should be 6: " << id.pid << " sid should be 7: " << id.sid << endl;
+
+}
+
+void test4()
+{
+	BTLeafNode test1;
+	setBuffer(test1.buffer, 0, 0);
+	setBuffer(test1.buffer, 1, 1);
+
+	setBuffer(test1.buffer, 2, 2);
+	setBuffer(test1.buffer, 3, 3);
+	setBuffer(test1.buffer, 4, 4);
+
+	int eid;
+	test1.locate(5, eid);
+
+	cout << "it should be 1: " << eid << endl;
 }
 
 int main()
@@ -67,7 +128,9 @@ int main()
   // run the SQL engine taking user commands from standard input (console).
   //SqlEngine::run(stdin);
 
-  //test();
-  test2();
+  	//test();
+  	//test2();
+  	test3();
+	//test4();
   return 0;
 }

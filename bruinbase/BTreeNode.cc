@@ -1,5 +1,5 @@
 #include "BTreeNode.h"
-
+#include <iostream>
 
 using namespace std;
 
@@ -11,8 +11,10 @@ using namespace std;
  */
 RC BTLeafNode::read(PageId pid, const PageFile& pf)
 { 
+	//RC is int type
 	RC rc;
 	//BTNode class has a private member called buffer
+	//read() is a member function of PageFile
 	rc = pf.read(pid, this->buffer);
 	return rc; 
 }
@@ -25,8 +27,10 @@ RC BTLeafNode::read(PageId pid, const PageFile& pf)
  */
 RC BTLeafNode::write(PageId pid, PageFile& pf)
 { 
+	//RC is int type
 	RC rc;
-
+	//BTNode class has a private member called buffer
+	//write() is a member function of PageFile
 	rc = pf.write(pid, this->buffer);
 	return rc; 
 }
@@ -38,9 +42,10 @@ RC BTLeafNode::write(PageId pid, PageFile& pf)
 //pp: starting from offset 4 is KeyCount
 int BTLeafNode::getKeyCount()
 { 	
-
+	//KeyCound is located at second 4-byte block of buffer
 	char* keycountaddress = buffer + sizeof(PageId);
 	int keycount = *((int*)keycountaddress); 
+
 	return keycount; 
 }
 
@@ -53,7 +58,34 @@ int BTLeafNode::getKeyCount()
 RC BTLeafNode::insert(int key, const RecordId& rid)
 { 
 	RC rc;
-	return RC_NODE_FULL; 
+	//Check if node is full
+	if (getKeyCount() >= MAXLEAFNODESIZE)
+		return RC_NODE_FULL;
+	//Insertion begin
+	int eid;
+	rc = locate(key, eid);
+	if (rc == RC_NO_SUCH_RECORD)
+	{
+		//Inserted (key, rid) is at the end of the node
+		//cout << eid << endl;
+		//Initial pos began after pageid and keycount
+		char* init = buffer + sizeof(PageId) + sizeof(int);
+		//Insert rid.pid and rid.sid
+		//*(int*)(init + eid * LEAFNODEOFFSET) = rid.pid;
+		//(char*) (init + eid * LEAFNODEOFFSET) = (char*) &(rid.pid);
+		memcpy(init + eid * LEAFNODEOFFSET, (char*) &(rid.pid), sizeof(int));
+		//*(int*)(init + eid * LEAFNODEOFFSET + sizeof(int)) = rid.sid;
+		//(char*) (init + eid * LEAFNODEOFFSET + sizeof(int)) = (char*) &(rid.sid);
+		memcpy(init + eid * LEAFNODEOFFSET + sizeof(int), (char*) &(rid.sid), sizeof(int));
+		//Insert key
+		//*(int*)(init + eid * LEAFNODEOFFSET + sizeof(RecordId)) = key;
+		//(char*) (init + eid * LEAFNODEOFFSET + sizeof(RecordId)) = (char*) &key;
+		memcpy(init + eid * LEAFNODEOFFSET + sizeof(RecordId), (char*) &key, sizeof(int));
+		
+	}
+	//Inserted (key, rid) is at the mid of the node
+
+	return rc;
 }
 
 /*
@@ -78,6 +110,8 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
  * @param eid[OUT] the entry number that contains a key larger than or equalty to searchKey
  * @return 0 if successful. Return an error code if there is an error.
  */
+
+//
 RC BTLeafNode::locate(int searchKey, int& eid)
 { 
 	//initial pos began after pageid and keycount
@@ -86,14 +120,19 @@ RC BTLeafNode::locate(int searchKey, int& eid)
 	for (int i=0; i<this->getKeyCount(); i++)
 	{
 		//init + 0*12 +8, init + 1*12 +8, ...
-		if (*(int*)(init + i * LEAFNODEOFFSET +sizeof(RecordId)) < searchKey)
+		if (*(int*)(init + i * LEAFNODEOFFSET + sizeof(RecordId)) < searchKey)
+		{
 			continue;
+		}
 		else
 		{
+			//Return i to eid, return 0
 			eid = i;
 			return 0;
 		}
 	}
+	//Not found, return error code
+	eid = getKeyCount();
 	return RC_NO_SUCH_RECORD; 
 }
 
@@ -114,7 +153,8 @@ RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
 	char* RecordIdAddress_sid = RecordIdAddress_pid + sizeof(int);
 	rid.sid = *((int*)RecordIdAddress_sid);
 	char* KeyAddress = RecordIdAddress_sid + sizeof(int);
-	key = *((int*)KeyAddress);  	 
+	key = *((int*)KeyAddress);  
+
 	return 0; 
 }
 
