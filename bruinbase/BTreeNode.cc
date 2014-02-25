@@ -3,6 +3,12 @@
 
 using namespace std;
 
+//////////////////////////////
+//		BTLeafNode			//
+//////////////////////////////
+/*
+ * Constructor
+ */
 BTLeafNode::BTLeafNode(PageId pid)
 :m_pid(pid)
 {
@@ -61,6 +67,7 @@ RC BTLeafNode::write(PageId pid, PageFile& pf)
 	//BTNode class has a private member called buffer
 	//write() is a member function of PageFile
 	rc = pf.write(pid, this->buffer);
+
 	return rc; 
 }
 
@@ -71,7 +78,7 @@ RC BTLeafNode::write(PageId pid, PageFile& pf)
 //pp: starting from offset 4 is KeyCount
 int BTLeafNode::getKeyCount()
 { 	
-	//KeyCound is located at second 4-byte block of buffer
+	//keycount is located at the second 4-byte block of buffer
 	char* keycountaddress = buffer + sizeof(PageId);
 	int keycount = *((int*)keycountaddress); 
 
@@ -125,6 +132,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 	}
 	else
 	{
+		//Inserted (key, rid) is at the mid of the node
 		int temp_size = LEAFNODEOFFSET*(getKeyCount() - eid);
 		char* temp = new char[temp_size];
 		//
@@ -199,7 +207,7 @@ RC BTLeafNode::locate(int searchKey, int& eid)
 	//initial pos began after pageid and keycount
 	char* init = buffer + sizeof(PageId) + sizeof(int);
 
-	for (int i=0; i<this->getKeyCount(); i++)
+	for (int i = 0; i < this->getKeyCount(); i++)
 	{
 		//init + 0*12 +8, init + 1*12 +8, ...
 		if (*(int*)(init + i * LEAFNODEOFFSET + sizeof(RecordId)) < searchKey)
@@ -263,6 +271,40 @@ RC BTLeafNode::setNextNodePtr(PageId pid)
 	return 0; 
 }
 
+//////////////////////////////
+//		BTNonLeafNode		//
+//////////////////////////////
+/*
+ * Constructor
+ */
+BTNonLeafNode::BTNonLeafNode(PageId pid)
+:m_pid(pid)
+{
+	setKeyCount(0);
+}
+
+PageId BTNonLeafNode::getCurrentPid()
+{
+	return m_pid;
+}
+
+void BTNonLeafNode::setCurrentPid(PageId pid)
+{
+	m_pid = pid;
+}
+
+void BTNonLeafNode::printNode()
+{
+	char* init = buffer + sizeof(int);
+	for (int i = 0; i < this-> getKeyCount(); i++)
+	{
+		int m_pid, m_key;
+		m_pid = *(int*)(init + i * NONLEAFNODEOFFSET);
+		m_key = *(int*)(init + i * NONLEAFNODEOFFSET + sizeof(int));
+		cout << "pageid is: " << m_pid << " key is: " << m_key << endl;
+	}
+}
+
 /*
  * Read the content of the node from the page pid in the PageFile pf.
  * @param pid[IN] the PageId to read
@@ -270,7 +312,15 @@ RC BTLeafNode::setNextNodePtr(PageId pid)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTNonLeafNode::read(PageId pid, const PageFile& pf)
-{ return 0; }
+{ 
+	//RC is int type
+	RC rc;
+	//BTNode class has a private member called buffer
+	//read() is a member function of PageFile
+	rc = pf.read(pid, this->buffer);
+
+	return rc; 
+}
     
 /*
  * Write the content of the node to the page pid in the PageFile pf.
@@ -279,15 +329,37 @@ RC BTNonLeafNode::read(PageId pid, const PageFile& pf)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTNonLeafNode::write(PageId pid, PageFile& pf)
-{ return 0; }
+{ 	//Todo: Write a new node?
+	//RC is int type
+	RC rc;
+	//BTNode class has a private member called buffer
+	//write() is a member function of PageFile
+	rc = pf.write(pid, this->buffer);
+
+	return rc;  
+}
 
 /*
  * Return the number of keys stored in the node.
  * @return the number of keys in the node
  */
 int BTNonLeafNode::getKeyCount()
-{ return 0; }
+{
+	//keycount is located at the first 4-byte block of buffer
+	char* keycountaddress = buffer;
+	int keycount = *((int*)keycountaddress);
+	
+	return keycount; 
+}
 
+/*
+ * Set the number of keys stored in the node.
+ */
+void BTNonLeafNode::setKeyCount(const int keycount)
+{
+	char* keycountaddress = buffer;
+	memcpy(keycountaddress, &keycount, sizeof(int));
+}
 
 /*
  * Insert a (key, pid) pair to the node.
@@ -319,7 +391,27 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
-{ return 0; }
+{ 
+	//initial pos began after 4-byte keycount
+	char* init = buffer + sizeof(int);
+
+	for (int i = 0; i < this->getKeyCount(); i++)
+	{
+		//init + 0*8 + 4, init + 1*8 + 4, ...
+		if (*(int*)(init + i * NONLEAFNODEOFFSET + sizeof(PageId)) < searchKey)
+		{
+			continue;
+		}
+		else
+		{
+			pid = *(int*)(init + i * NONLEAFNODEOFFSET);
+			return 0;
+		}
+	}
+	//searchKey is larger than all keys, return the last pid
+	pid = *(int*)(init + getKeyCount() * NONLEAFNODEOFFSET);
+	return 0; 
+}
 
 /*
  * Initialize the root node with (pid1, key, pid2).

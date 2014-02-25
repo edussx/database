@@ -25,6 +25,7 @@
  */
 class BTLeafNode {
   public:
+    //
     void printNode();
     
     //Constructor
@@ -32,6 +33,7 @@ class BTLeafNode {
 
     //
     PageId getCurrentPid();
+
     //
     void setCurrentPid(PageId pid);
 
@@ -134,6 +136,18 @@ class BTLeafNode {
  */
 class BTNonLeafNode {
   public:
+    //
+    void printNode();
+    
+    //Constructor
+    BTNonLeafNode(PageId pid=0);
+
+    //
+    PageId getCurrentPid();
+    
+    //
+    void setCurrentPid(PageId pid);
+    
    /**
     * Insert a (key, pid) pair to the node.
     * Remember that all keys inside a B+tree node should be kept sorted.
@@ -182,6 +196,12 @@ class BTNonLeafNode {
     */
     int getKeyCount();
 
+    /**
+    * Set the number of keys stored in the node.
+    * @Set the number of keys in the node
+    */
+    void setKeyCount(const int keycount);
+
    /**
     * Read the content of the node from the page pid in the PageFile pf.
     * @param pid[IN] the PageId to read
@@ -198,12 +218,13 @@ class BTNonLeafNode {
     */
     RC write(PageId pid, PageFile& pf);
 
-  private:
+  //private:
    /**
     * The main memory buffer for loading the content of the disk page 
     * that contains the node.
     */
     char buffer[PageFile::PAGE_SIZE];
+    PageId m_pid;
 }; 
 
 #endif /* BTNODE_H */

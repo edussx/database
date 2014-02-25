@@ -200,6 +200,39 @@ void test6()
 	cout << firstKey << endl;
 }
 
+//BTNonLeafNode test begins
+void test7()
+{
+	/*
+	count pid key  pid key  pid  key  pid
+	 --------------------------------------
+	| 3 | 998| 10 | 999| 20 |1000| 30 |1001|
+	 --------------------------------------
+	  0	  1    2   3   4    5   6    7
+	*/
+	BTNonLeafNode test1(999);
+
+	setBuffer(test1.buffer, 3, 0);
+
+	setBuffer(test1.buffer, 998, 1);
+	setBuffer(test1.buffer, 10, 2);
+
+	setBuffer(test1.buffer, 999, 3);
+	setBuffer(test1.buffer, 20, 4);
+
+	setBuffer(test1.buffer, 1000, 5);
+	setBuffer(test1.buffer, 30, 6);
+
+	setBuffer(test1.buffer, 1001, 7);
+
+	cout << "keycount should be 3: " << test1.getKeyCount() << endl;
+	PageId tmp_pid;
+	int searchKey = 25;
+	test1.locateChildPtr(25, tmp_pid);
+	cout << "pid should be 1000: " << tmp_pid << endl;
+	test1.locateChildPtr(35, tmp_pid);
+	cout << "pid should be 1001: " << tmp_pid << endl;
+}
 
 
 int main()
@@ -212,6 +245,7 @@ int main()
   	//test3();
 	//test4();
 	//test5();
-	test6();
+	//test6();
+	test7();
   return 0;
 }
