@@ -163,6 +163,44 @@ void test5()
 	cout << "pid should be 5: " << id.pid << " sid should be 5: " << id.sid << endl;
 }
 
+void test6()
+{
+	BTLeafNode test1(999);
+
+	setBuffer(test1.buffer, 1000, 0);
+	setBuffer(test1.buffer, 4, 1);
+
+	setBuffer(test1.buffer, 0, 2);
+	setBuffer(test1.buffer, 0, 3);
+	setBuffer(test1.buffer, 4, 4);
+
+	setBuffer(test1.buffer, 0, 5);
+	setBuffer(test1.buffer, 0, 6);
+	setBuffer(test1.buffer, 7, 7);
+
+	setBuffer(test1.buffer, 0, 8);
+	setBuffer(test1.buffer, 0, 9);
+	setBuffer(test1.buffer, 10, 10);
+
+	setBuffer(test1.buffer, 0, 11);
+	setBuffer(test1.buffer, 0, 12);
+	setBuffer(test1.buffer, 13, 13);
+
+	//test1.printNode();
+
+	BTLeafNode test2(1000);
+	RecordId testid1;
+	testid1.pid = 0;
+	testid1.sid = 0;
+	int firstKey;
+	test1.insertAndSplit(8, testid1, test2, firstKey);
+	test1.printNode();
+	cout << endl;
+	test2.printNode();
+	cout << firstKey << endl;
+}
+
+
 
 int main()
 {
@@ -173,6 +211,7 @@ int main()
   	//test2();
   	//test3();
 	//test4();
-	test5();
+	//test5();
+	test6();
   return 0;
 }

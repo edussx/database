@@ -14,8 +14,8 @@
 #include "PageFile.h"
 #include <cstring>
 
-#define MAXLEAFNODESIZE 60
-#define MAXNONLEAFNODESIZE 60
+#define MAXLEAFNODESIZE 4
+#define MAXNONLEAFNODESIZE 4
 //
 #define LEAFNODEOFFSET (sizeof(RecordId) + sizeof(int))// 12
 #define NONLEAFNODEOFFSET (sizeof(PageId) + sizeof(int)) // 8
@@ -25,6 +25,16 @@
  */
 class BTLeafNode {
   public:
+    void printNode();
+    
+    //Constructor
+    BTLeafNode(PageId pid=0);
+
+    //
+    PageId getCurrentPid();
+    //
+    void setCurrentPid(PageId pid);
+
    /**
     * Insert the (key, rid) pair to the node.
     * Remember that all keys inside a B+tree node should be kept sorted.
@@ -91,7 +101,7 @@ class BTLeafNode {
     * Set the number of keys stored in the node.
     * @Set the number of keys in the node
     */
-    void setKeyCount(int keycount);
+    void setKeyCount(const int keycount);
 
    /**
     * Read the content of the node from the page pid in the PageFile pf.
@@ -115,6 +125,7 @@ class BTLeafNode {
     * that contains the node.
     */
     char buffer[PageFile::PAGE_SIZE];
+    PageId m_pid;
 }; 
 
 

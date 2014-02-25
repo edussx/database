@@ -3,6 +3,33 @@
 
 using namespace std;
 
+BTLeafNode::BTLeafNode(PageId pid)
+:m_pid(pid)
+{
+	setKeyCount(0);
+}
+
+PageId BTLeafNode::getCurrentPid()
+{
+	return m_pid;
+}
+
+void BTLeafNode::setCurrentPid(PageId pid)
+{
+	m_pid = pid;
+}
+
+void BTLeafNode::printNode()
+{
+	for(int i = 0; i < this-> getKeyCount(); i++)
+	{
+		int m_key;
+		RecordId m_rid;
+		readEntry(i, m_key, m_rid);
+		cout<< "Entry " << i << " is: "<< m_rid.pid << " " << m_rid.sid << " " << m_key << endl;  
+	}
+}
+
 /*
  * Read the content of the node from the page pid in the PageFile pf.
  * @param pid[IN] the PageId to read
@@ -16,6 +43,7 @@ RC BTLeafNode::read(PageId pid, const PageFile& pf)
 	//BTNode class has a private member called buffer
 	//read() is a member function of PageFile
 	rc = pf.read(pid, this->buffer);
+
 	return rc; 
 }
     
@@ -27,6 +55,7 @@ RC BTLeafNode::read(PageId pid, const PageFile& pf)
  */
 RC BTLeafNode::write(PageId pid, PageFile& pf)
 { 
+	//Todo: Write a new node?
 	//RC is int type
 	RC rc;
 	//BTNode class has a private member called buffer
@@ -75,7 +104,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 	//Insertion begin
 	int eid;
 	rc = locate(key, eid);
-	char * init = buffer + sizeof(PageId) + sizeof(int);;
+	char * init = buffer + sizeof(PageId) + sizeof(int);
 	if (rc == RC_NO_SUCH_RECORD)
 	{
 		//Inserted (key, rid) is at the end of the node
@@ -126,7 +155,34 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
  */
 RC BTLeafNode::insertAndSplit(int key, const RecordId& rid, 
                               BTLeafNode& sibling, int& siblingKey)
-{ return 0; }
+{ 
+	int left_half_size = MAXLEAFNODESIZE / 2;
+	//
+	int right_half_size = MAXLEAFNODESIZE - left_half_size;
+	bool left_insert = ( key < buffer[left_half_size] );
+	char * init = buffer + sizeof(PageId) + sizeof(int);
+	memcpy((char*)(sibling.buffer + sizeof(PageId) + sizeof(int)), init + left_half_size * LEAFNODEOFFSET, right_half_size * LEAFNODEOFFSET);
+	this->setKeyCount(left_half_size);
+	sibling.setKeyCount(right_half_size);
+	if (left_insert)
+	{
+		this->insert(key, rid);
+	}
+	else
+	{
+		sibling.insert(key, rid);
+	}
+	RecordId m_rid;
+	sibling.readEntry(0, siblingKey, m_rid);
+
+	//set the pid
+	PageId temp_pid = getNextNodePtr();
+	sibling.setNextNodePtr(temp_pid);
+	setCurrentPid(sibling.getCurrentPid());
+
+	return 0;
+
+}
 
 /*
  * Find the entry whose key value is larger than or equal to searchKey
