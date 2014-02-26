@@ -238,6 +238,9 @@ RC BTLeafNode::locate(int searchKey, int& eid)
 //pp: in RecordID, first 4 is pid and next 4 is sid
 RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
 {
+	if (eid > getKeyCount())
+		return RC_NO_SUCH_RECORD; 
+	
 	char* RecordIdAddress_pid = buffer + sizeof(PageId) + sizeof(int) + eid * LEAFNODEOFFSET;
 	rid.pid = *((int*)RecordIdAddress_pid);
 	char* RecordIdAddress_sid = RecordIdAddress_pid + sizeof(int);
@@ -370,7 +373,47 @@ void BTNonLeafNode::setKeyCount(const int keycount)
  * @return 0 if successful. Return an error code if the node is full.
  */
 RC BTNonLeafNode::insert(int key, PageId pid)
-{ return 0; }
+{ 
+	RC rc;
+	//Check if node is full
+	if (getKeyCount() >= MAXNONLEAFNODESIZE)
+		return RC_NODE_FULL;
+	//Insertion begin
+	int eid;
+	rc = locate(key, eid);
+	char * init = buffer + sizeof(int);
+	if (rc == RC_NO_SUCH_RECORD)
+	{
+		//Inserted (pid, key) is at the end of the node
+		char* temp = new char[sizeof(PageId)];
+		memcpy(temp, init + eid * NONLEAFNODEOFFSET, sizeof(int));
+		//Insert pid
+		memcpy(init + eid * NONLEAFNODEOFFSET, (char*) &pid, sizeof(int));
+		//Insert key
+		memcpy(init + eid * NONLEAFNODEOFFSET + sizeof(PageId), (char*) &key, sizeof(int));
+		//write back
+		memcpy(init + (eid+1) * NONLEAFNODEOFFSET, temp, sizeof(int));
+		delete [] temp;
+	}
+	else
+	{
+		//Inserted (pid, key) is at the mid of the node
+		int temp_size = NONLEAFNODEOFFSET*(getKeyCount() - eid) + sizeof(PageId);
+		char* temp = new char[temp_size];
+		//
+		memcpy((char*)temp, (char*)(init + eid * NONLEAFNODEOFFSET), temp_size);
+		memcpy((char*)(init + (eid + 1) * NONLEAFNODEOFFSET ), (char*)temp, temp_size);
+		
+		memcpy(init + eid * NONLEAFNODEOFFSET, (char*) &pid, sizeof(int));
+		memcpy(init + eid * NONLEAFNODEOFFSET + sizeof(int), (char*) &key, sizeof(int));
+		delete [] temp;
+
+	}
+	//Inserted (key, rid) is at the mid of the node
+	setKeyCount(getKeyCount() + 1);
+
+	return rc;
+}
 
 /*
  * Insert the (key, pid) pair to the node
@@ -384,6 +427,59 @@ RC BTNonLeafNode::insert(int key, PageId pid)
  */
 RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, int& midKey)
 { return 0; }
+
+/**
+* Find the index entry whose key value is larger than or equal to searchKey
+* and output the eid (entry id) whose key value &gt;= searchKey.
+* Remember that keys inside a B+tree node are sorted.
+* @param searchKey[IN] the key to search for.
+* @param eid[OUT] the entry number that contains a key larger              
+*                 than or equalty to searchKey.
+* @return 0 if successful. Return an error code if there is an error.
+*/
+RC BTNonLeafNode::locate(int searchKey, int& eid)
+{
+	//initial pos began after 4-byte keycount
+	char* init = buffer + sizeof(int);
+
+	for (int i = 0; i < this->getKeyCount(); i++)
+	{
+		//init + 0*8 + 4, init + 1*8 + 4, ...
+		if (*(int*)(init + i * NONLEAFNODEOFFSET + sizeof(PageId)) < searchKey)
+		{
+			continue;
+		}
+		else
+		{
+			eid = i;
+			return 0;
+		}
+	}
+	//Not found, return error code
+	eid = getKeyCount();
+	return RC_NO_SUCH_RECORD; 
+}
+
+/**
+* Read the (pid, key) pair from the eid entry.
+* @param eid[IN] the entry number to read the (pid, key) pair from
+* @param key[OUT] the key from the slot
+* @param pid[OUT] the RecordId from the slot
+* @return 0 if successful. Return an error code if there is an error.
+*/
+RC BTNonLeafNode::readEntry(int eid, PageId& pid, int& key)
+{
+	if (eid > getKeyCount())
+		return RC_NO_SUCH_RECORD; 
+
+	char* RecordIdAddress_pid = buffer + sizeof(int) + eid * NONLEAFNODEOFFSET;
+	pid = *((int*)RecordIdAddress_pid);
+	char* RecordIdAddress_key = RecordIdAddress_pid + sizeof(PageId);
+	key = *((int*)RecordIdAddress_key);
+  
+	return 0;
+};
+
 
 /*
  * Given the searchKey, find the child-node pointer to follow and
@@ -425,7 +521,7 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
 RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2)
 { 
 	setKeyCount(1);
-	
+
 	char* init = buffer + sizeof(int);
 	//Set pid1
 	memcpy(init, &pid1, sizeof(int));

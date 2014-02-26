@@ -205,6 +205,7 @@ void test7()
 {
 	/*
 	pid:990
+			0		1 	 	  2
 	count pid key  pid key  pid  key  pid
 	 --------------------------------------
 	| 3 | 998| 10 | 999| 20 |1000| 30 |1001|
@@ -237,13 +238,24 @@ void test7()
 	cout << "new keycount should be 2: " << test1.getKeyCount() << endl;
 	test1.setKeyCount(3);
 
+	int eid;
+	test1.locate(25, eid);
+	cout << "eid should be 2: " << eid << endl;
+
+	int key;
+	eid = 1;
+	test1.readEntry(eid, tmp_pid, key);
+	cout << "pid should be 999: " << tmp_pid << "key should be 20: " << key << endl;
+
+	/*=======================================*/
+
 	BTNonLeafNode test2(12000);
 	test2.initializeRoot(990, 40, 1100);
 	/*
 	pid: 12000
 	count pid key  pid key  pid  key  pid
 	 ------------------
-	| 3 | 990| 40 |1100| 
+	| 1 | 990| 40 |1100| 
 	 ------------------
 	  0	  1    2   3   
 	*/
@@ -252,6 +264,36 @@ void test7()
 
 }
 
+void test8()
+{
+	PageId id;
+	int key;
+
+	BTNonLeafNode test1;
+	setBuffer(test1.buffer, 2, 0);
+
+	setBuffer(test1.buffer, 1, 1);
+	setBuffer(test1.buffer, 2, 2);
+
+	setBuffer(test1.buffer, 3, 3);
+	setBuffer(test1.buffer, 4, 4);
+
+	setBuffer(test1.buffer, 5, 5);
+
+	test1.insert(11, 998);
+	test1.readEntry(2, id, key);
+	cout << "key should be 11: " << key << endl;
+	cout << "pid should be 998: " << id << endl;
+
+
+	test1.insert(3, 997);
+	test1.readEntry(1, id, key);
+	cout << "key should be 3: " << key << endl;
+	cout << "pid should be 997: " << id << endl;
+	
+	cout << test1.insert(999,999) << endl;
+	//test1.printNode();
+}
 
 int main()
 {
@@ -264,6 +306,7 @@ int main()
 	//test4();
 	//test5();
 	//test6();
-	test7();
+	//test7();
+	test8();
   return 0;
 }

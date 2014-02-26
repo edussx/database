@@ -144,10 +144,10 @@ class BTNonLeafNode {
 
     //
     PageId getCurrentPid();
-    
+
     //
     void setCurrentPid(PageId pid);
-    
+
    /**
     * Insert a (key, pid) pair to the node.
     * Remember that all keys inside a B+tree node should be kept sorted.
@@ -171,6 +171,26 @@ class BTNonLeafNode {
     */
     RC insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, int& midKey);
 
+   /**
+    * Find the index entry whose key value is larger than or equal to searchKey
+    * and output the eid (entry id) whose key value &gt;= searchKey.
+    * Remember that keys inside a B+tree node are sorted.
+    * @param searchKey[IN] the key to search for.
+    * @param eid[OUT] the entry number that contains a key larger              
+    *                 than or equalty to searchKey.
+    * @return 0 if successful. Return an error code if there is an error.
+    */
+    RC locate(int searchKey, int& eid);
+
+   /**
+    * Read the (key, rid) pair from the eid entry.
+    * @param eid[IN] the entry number to read the (key, rid) pair from
+    * @param key[OUT] the key from the slot
+    * @param rid[OUT] the RecordId from the slot
+    * @return 0 if successful. Return an error code if there is an error.
+    */
+    RC readEntry(int eid, PageId& pid, int& key);
+    
    /**
     * Given the searchKey, find the child-node pointer to follow and
     * output it in pid.
