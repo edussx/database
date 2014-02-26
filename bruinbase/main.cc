@@ -204,13 +204,14 @@ void test6()
 void test7()
 {
 	/*
+	pid:990
 	count pid key  pid key  pid  key  pid
 	 --------------------------------------
 	| 3 | 998| 10 | 999| 20 |1000| 30 |1001|
 	 --------------------------------------
 	  0	  1    2   3   4    5   6    7
 	*/
-	BTNonLeafNode test1(999);
+	BTNonLeafNode test1(990);
 
 	setBuffer(test1.buffer, 3, 0);
 
@@ -232,6 +233,23 @@ void test7()
 	cout << "pid should be 1000: " << tmp_pid << endl;
 	test1.locateChildPtr(35, tmp_pid);
 	cout << "pid should be 1001: " << tmp_pid << endl;
+	test1.setKeyCount(2);
+	cout << "new keycount should be 2: " << test1.getKeyCount() << endl;
+	test1.setKeyCount(3);
+
+	BTNonLeafNode test2(12000);
+	test2.initializeRoot(990, 40, 1100);
+	/*
+	pid: 12000
+	count pid key  pid key  pid  key  pid
+	 ------------------
+	| 3 | 990| 40 |1100| 
+	 ------------------
+	  0	  1    2   3   
+	*/
+	test2.printNode();
+
+
 }
 
 

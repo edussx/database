@@ -296,13 +296,15 @@ void BTNonLeafNode::setCurrentPid(PageId pid)
 void BTNonLeafNode::printNode()
 {
 	char* init = buffer + sizeof(int);
-	for (int i = 0; i < this-> getKeyCount(); i++)
+	int i;
+	for (i = 0; i < this-> getKeyCount(); i++)
 	{
 		int m_pid, m_key;
 		m_pid = *(int*)(init + i * NONLEAFNODEOFFSET);
 		m_key = *(int*)(init + i * NONLEAFNODEOFFSET + sizeof(int));
 		cout << "pageid is: " << m_pid << " key is: " << m_key << endl;
 	}
+	cout << "page id is: " << *(int*)(init + i * NONLEAFNODEOFFSET) << endl;
 }
 
 /*
@@ -421,4 +423,16 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2)
-{ return 0; }
+{ 
+	setKeyCount(1);
+	
+	char* init = buffer + sizeof(int);
+	//Set pid1
+	memcpy(init, &pid1, sizeof(int));
+	//Set key
+	memcpy(init + sizeof(int), &key, sizeof(int));
+	//Set pid2
+	memcpy(init + 2 * sizeof(int), &pid2, sizeof(int));
+
+	return 0; 
+}
