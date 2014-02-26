@@ -182,15 +182,11 @@ class BTNonLeafNode {
     */
     RC locate(int searchKey, int& eid);
 
-   /**
-    * Read the (key, rid) pair from the eid entry.
-    * @param eid[IN] the entry number to read the (key, rid) pair from
-    * @param key[OUT] the key from the slot
-    * @param rid[OUT] the RecordId from the slot
-    * @return 0 if successful. Return an error code if there is an error.
+   /*
+    * read key and pid before that key 
     */
     RC readEntry(int eid, PageId& pid, int& key);
-    
+
    /**
     * Given the searchKey, find the child-node pointer to follow and
     * output it in pid.

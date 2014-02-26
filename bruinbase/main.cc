@@ -193,11 +193,12 @@ void test6()
 	testid1.pid = 0;
 	testid1.sid = 0;
 	int firstKey;
-	test1.insertAndSplit(8, testid1, test2, firstKey);
+	test1.insertAndSplit(14, testid1, test2, firstKey);
+	
 	test1.printNode();
 	cout << endl;
 	test2.printNode();
-	cout << firstKey << endl;
+	cout << "firstkey is: " << firstKey << endl;
 }
 
 //BTNonLeafNode test begins
@@ -205,7 +206,7 @@ void test7()
 {
 	/*
 	pid:990
-			0		1 	 	  2
+			0		   1 	 	  2
 	count pid key  pid key  pid  key  pid
 	 --------------------------------------
 	| 3 | 998| 10 | 999| 20 |1000| 30 |1001|
@@ -281,18 +282,20 @@ void test8()
 	setBuffer(test1.buffer, 5, 5);
 
 	test1.insert(11, 998);
+	//test1.printNode();
 	test1.readEntry(2, id, key);
 	cout << "key should be 11: " << key << endl;
-	cout << "pid should be 998: " << id << endl;
+	cout << "pid should be 5: " << id << endl;
 
 
 	test1.insert(3, 997);
+	//test1.printNode();
 	test1.readEntry(1, id, key);
 	cout << "key should be 3: " << key << endl;
-	cout << "pid should be 997: " << id << endl;
+	cout << "pid should be 3: " << id << endl;
 	
 	cout << test1.insert(999,999) << endl;
-	//test1.printNode();
+	test1.printNode();
 }
 
 int main()
