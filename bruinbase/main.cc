@@ -281,21 +281,49 @@ void test8()
 
 	setBuffer(test1.buffer, 5, 5);
 
-	test1.insert(11, 998);
-	//test1.printNode();
-	test1.readEntry(2, id, key);
-	cout << "key should be 11: " << key << endl;
-	cout << "pid should be 5: " << id << endl;
+	// test1.insert(11, 998);
+	// //test1.printNode();
+	// test1.readEntry(2, id, key);
+	// cout << "key should be 11: " << key << endl;
+	// cout << "pid should be 5: " << id << endl;
 
 
-	test1.insert(3, 997);
-	//test1.printNode();
-	test1.readEntry(1, id, key);
-	cout << "key should be 3: " << key << endl;
-	cout << "pid should be 3: " << id << endl;
+	test1.insert(1, 997);
+	test1.printNode();
+	test1.readEntry(0, id, key);
+	cout << "key should be 1: " << key << endl;
+	cout << "pid should be 1: " << id << endl;
 	
 	cout << test1.insert(999,999) << endl;
+	//test1.printNode();
+}
+
+void test9()
+{
+	PageId id;
+	int key;
+
+	BTNonLeafNode test1;
+	setBuffer(test1.buffer, 0, 0);
+	setBuffer(test1.buffer, 0, 1);
+	
+	test1.insert(10,10);
+	test1.insert(20,20);
+	test1.insert(30,30);
+	test1.insert(40,40);
+
+	cout << endl;
+
+	BTNonLeafNode test2;
+	setBuffer(test2.buffer, 0, 0);
+	setBuffer(test2.buffer, 0, 1);
+
+	int midkey;
+	test1.insertAndSplit(35, 35, test2, midkey);
 	test1.printNode();
+	cout << "midkey: " << midkey << endl;
+	test2.printNode();
+	cout << endl;
 }
 
 int main()
@@ -310,6 +338,7 @@ int main()
 	//test5();
 	//test6();
 	//test7();
-	test8();
+	//test8();
+	test9();
   return 0;
 }

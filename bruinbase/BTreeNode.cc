@@ -445,10 +445,12 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
 	//push up mid_key_left
 	if(key < mid_key_left)
 	{
+		//push up the mid_key_left
+		//
 		midKey = mid_key_left;
 		int temp_size = mid_key_address * NONLEAFNODEOFFSET + sizeof(PageId);
 		memcpy(sibling.buffer + sizeof(int), (char*)(buffer + sizeof(int) + mid_key_address * NONLEAFNODEOFFSET) , temp_size);
-		setKeyCount(mid_key_address);
+		setKeyCount(mid_key_address - 1);
 		sibling.setKeyCount(mid_key_address);
 		this->insert(key, pid);
 	}	
@@ -456,11 +458,21 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
 	else if(key < mid_key_right)
 	{
 		midKey = key;
+		int temp_size = mid_key_address * NONLEAFNODEOFFSET;
+		memcpy(sibling.buffer + sizeof(int), (char*)(&pid), sizeof(int));
+		memcpy(sibling.buffer + sizeof(int) + sizeof(PageId), (char*)(buffer + sizeof(int) + mid_key_address * NONLEAFNODEOFFSET + sizeof(PageId)), temp_size);
+		setKeyCount(mid_key_address);
+		sibling.setKeyCount(mid_key_address);
 	}
 	//push up mid_key_right
 	else
 	{
 		midKey = mid_key_right;
+		int temp_size = (mid_key_address - 1)* NONLEAFNODEOFFSET + sizeof(PageId);
+		memcpy(sibling.buffer + sizeof(int), (char*)(buffer + sizeof(int) + (mid_key_address + 1) * NONLEAFNODEOFFSET), temp_size);
+		setKeyCount(mid_key_address);
+		sibling.setKeyCount(mid_key_address - 1);
+		sibling.insert(key, pid);
 	}
 	setKeyCount(mid_key_address);
 	sibling.setKeyCount(mid_key_address);
