@@ -76,8 +76,9 @@ RC BTreeIndex::close()
 	memcpy(buffer + sizeof(PageId), &treeHeight, sizeof(int));
 
 	rc = pf.write(0, buffer);
+	if (rc != 0) return rc;
 	rc = pf.close();
-	
+
     return rc;
 }
 
@@ -89,7 +90,43 @@ RC BTreeIndex::close()
  */
 RC BTreeIndex::insert(int key, const RecordId& rid)
 {
-    return 0;
+	RC rc;
+	BTNonLeafNode root;
+	BTLeafNode leftleaf, rightleaf;
+	//Initialize a new tree
+	if (rootPid == -1)
+	{
+		//pid 0 is reserved for rootPid and treeHeight
+		PageId rootPid = 1; 
+		PageId lpid = 2;
+		PageId rpid = 3;
+
+		//write leftnode, which is empty at initialization
+		rc = leftleaf.setNextNodePtr(rpid);
+		if (rc != 0) return rc;
+		rc = leftleaf.write(lpid, pf);
+		if (rc != 0) return rc;
+		//write rightnode
+		rc = rightleaf.insert(key, rid);
+		if (rc != 0) return rc;
+		rc = rightleaf.write(rpid, pf);
+		if (rc != 0) return rc;
+		//init root
+		rc = root.initializeRoot(lpid, key, rpid);
+		if (rc != 0) return rc;
+		//write root
+		rc = root.write(rootPid, pf);
+		if (rc != 0) return rc;
+		
+		treeHeight = 2;
+	}
+	//tree is not empty
+	else
+	{
+		
+	}
+
+    return rc;
 }
 
 /*
