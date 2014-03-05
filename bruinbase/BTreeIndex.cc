@@ -150,6 +150,43 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
  */
 RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
 {
+	//note the root is height 1, then child of root is height 2
+    int cur_height = 1;
+    PageId cur_pid;//page id for nonleaf and leaf
+    int eid;//entry id in the leaf node
+    BTNonLeafNode nonleaf;
+    //rc for error code info
+    RC rc;
+    if(rc = nonleaf.read(rootPid, pf))//if rc is not 0
+    	return rc;//return the error code
+    //now nonleaf contains the root
+    if(rc = nonleaf.locateChildPtr(searchKey, cur_pid))
+    	return rc;
+    cur_height++;
+    while(cur_height < treeHeight)//if it is not the leaf
+    {
+    	//now nonleaf contains the child of root
+    	if(rc = nonleaf.read(cur_pid, pf))
+    		return rc;
+    	//locate the child ptr of child of root
+    	if(rc = nonleaf.locateChildPtr(searchKey, cur_pid))
+    		return rc;
+    	cur_height++;
+    }
+    //when exit, it means we reach the leaf node, 
+    //and cur_pid contains the leaf pid
+    BTLeafNode leaf;
+    if(rc = leaf.read(cur_pid, pf))
+    	return rc;
+    //now leaf contains the leaf node
+    //if error code is not 0, it means RC_NO_SUCH_RECORD
+    //no record has equal or larger key than the searchKey
+    if(rc = leaf.locate(searchKey, eid))
+    	return rc;
+    //if error code is 0, it means there is a record
+    //assign value to the cursor, pid and eid
+    cursor.pid = cur_pid;
+    cursor.eid = eid;
     return 0;
 }
 
