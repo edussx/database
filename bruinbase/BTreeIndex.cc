@@ -180,8 +180,8 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     if(cursor.eid == leaf.getKeyCount())
     //if exceed the valid number of entry
     {
-    	cursor.pid = leaf.getNextNodePtr();
     	cursor.eid = 0;
+    	cursor.pid = leaf.getNextNodePtr();
     }
     //else, cursor.pid no change, cursor.eid no change
     return 0;
