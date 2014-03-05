@@ -171,7 +171,7 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
 	int right_half_init;
 	RecordId m_rid_0;
 	readEntry(left_half_size, right_half_init, m_rid_0);
-	cout<< "mid before insert is "<< right_half_init << endl;
+	//cout<< "mid before insert is "<< right_half_init << endl;
 
 	bool left_insert = ( key < right_half_init );
 	char * init = buffer + sizeof(PageId) + sizeof(int);
