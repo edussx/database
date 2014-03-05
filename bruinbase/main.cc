@@ -329,7 +329,7 @@ void test9()
 int main()
 {
   // run the SQL engine taking user commands from standard input (console).
-  //SqlEngine::run(stdin);
+  SqlEngine::run(stdin);
 
   	//test();
   	//test2();
@@ -339,6 +339,6 @@ int main()
 	//test6();
 	//test7();
 	//test8();
-	test9();
+	//test9();
   return 0;
 }
