@@ -99,7 +99,8 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
 	if (rootPid == -1)
 	{
 		//pid 0 is reserved for rootPid and treeHeight
-		rootPid = 1; 
+
+		PageId rootPid = 1; //pp: wrong here, rootPid is a data member
 		PageId lpid = 2;
 		PageId rpid = 3;
 
@@ -122,14 +123,43 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
 		
 		treeHeight = 2;
 
+		return 0;
 	}
 	//tree is not empty
 	else
 	{
-		
+		//call recursive insert
+		//RC rc;
+		int m_Sibling_key = -1;
+		int m_Sibling_pid = -1;
+		bool m_flag = false;//default no overflow
+
+		if(rc = recInsert(key, rid, rootPid, m_flag, m_Sibling_key, m_Sibling_pid, 1))//start from rootPid
+			return rc;
+		if(m_flag)//new root is needed, treeHeight ++
+		{
+			//new_root
+			BTNonLeafNode new_root;
+			//initialize new root with old rootPid and m_Sibling_pid
+			new_root.initializeRoot(rootPid, m_Sibling_key, m_Sibling_pid);//
+			//update the rootPid
+			rootPid = pf.endPid();
+			treeHeight ++;//update the tree height
+			//finally write the new root back
+			if(rc = new_root.write(rootPid, pf))
+				return rc;
+
+			return 0;
+
+		}
+		else//no need to get new root
+		{
+			return 0;
+		}
+
 	}
 
-    return rc;
+    //return rc;
 }
 
 /*
@@ -232,4 +262,117 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     }
     //else, cursor.pid no change, cursor.eid no change
     return 0;
+}
+
+
+//
+/*
+ * recursive insert
+ * @param key[IN] the key to be inserted
+ * @param rid[IN] the RecordId to be inserted
+ * @param input_pid[IN] the starting point of pid
+ * @param flag[OUT], the flag to indicates whether overflow happens
+ * @param sibling_key[OUT], the key to be inserted when overflow happens in child
+ * @param sibling_pid[OUT], the pid to be inserted when overflow happens in child
+ * @param height[IN] the height 
+ * @return error code. 0 if no error
+ */
+RC BTreeIndex::recInsert(int key, const RecordId& rid, PageId input_pid, bool& flag, int& Sibling_key, PageId& Sibling_pid, int height)
+{
+	RC rc;
+	int m_Sibling_key = -1;
+	int m_Sibling_pid = -1;
+	bool m_flag = false;//default no overflow
+	BTLeafNode leaf;
+	BTLeafNode nonleaf;
+	PageId child_pid;
+	PageId new_pid;
+	if(height < treeHeight)//in the nonleaf node level
+	{
+		if(rc = nonleaf.read(input_pid, pf))
+			return rc;
+		//now nonleaf contain the starting point
+		if(rc = nonleaf.locateChildPtr(key, child_pid))
+			return rc;
+		//now cur_pid contains the child_pid
+		// recursive call insert
+		if(rc = recInsert(key, rid, child_pid, m_flag, m_Sibling_key, m_Sibling_pid, height + 1))
+			return rc;
+		//handle the result from recursive call insert
+		//check the flag from the child
+		if(m_flag)//if true, then there is overflow
+		{
+			//we have to use the m_Sibling_key and m_Sibling_pid to insert into non-leaf node
+			if(rc = nonleaf.insert(m_Sibling_key, m_Sibling_pid))//if comes here, rc = RC_NODE_FULL, then use insertAndSplit
+			{
+				BTNonLeafNode Sibling_nonleaf;
+				int mid_key;
+				//nonleaf is full, use insertAndSplit version
+				//and Sibling_nonleaf and nonleaf will redistribute and mid_key shall be return to upper level
+				if(rc = nonleaf.insertAndSplit(m_Sibling_key, m_Sibling_pid, Sibling_nonleaf, mid_key))
+					return rc;
+				m_flag = true;//non leaf has overflow
+				m_Sibling_key = mid_key;//set the m_Sibling_key for the upper level node to be inserted
+				m_Sibling_pid =  pf.endPid();//get the new page for Sibling and for the upper level node to be inserted
+
+				if(nonleaf.write(input_pid,pf))
+					return rc;
+				if(Sibling_nonleaf.write(m_Sibling_pid,pf))
+					return rc;
+				
+				return 0;
+			}
+			else//if comes here, rc = 0, then insert is already down
+			{
+				//since just insert the sibling_key and Sibling_pid into the nonleaf is done, write back
+				if(nonleaf.write(input_pid,pf))
+					return rc;
+				return 0;//every thing is done
+			}
+
+		}
+		else//if false then there is no overflow
+		{
+			//no change to m_flag
+			//m_flag is false
+			return 0;
+		}
+
+	}
+	else//in the leaf node level
+	{
+		if(rc = leaf.read(input_pid, pf))
+			return rc;
+		//now leaf node contains the leaf
+		//try to insert into the key, rid to the leaf node
+		if(rc = leaf.insert(key, rid))//if comes here, then rc = RC_NODE_FULL, then use insertAndSplit
+		{
+			BTLeafNode Sibling_leaf;
+			if(rc = leaf.insertAndSplit(key, rid, Sibling_leaf, m_Sibling_key))//note m_Sibling_key is set here
+				return rc;
+			//now Sibling_leaf and leaf are both updated
+			m_flag = true;//set the flag to true
+			m_Sibling_pid = pf.endPid();//get the new pid for write
+			//update the next node ptr
+			Sibling_leaf.setNextNodePtr(leaf.getNextNodePtr());
+			leaf.setNextNodePtr(m_Sibling_pid);
+
+			//write back leaf and sibling_leaf
+			if(rc = Sibling_leaf.write(m_Sibling_pid, pf))//write back Sibling_leaf
+				return rc;
+			if(rc = leaf.write(input_pid,pf))//write back leaf
+				return rc;
+			return 0;//return correct code
+
+		}
+		else//if comes here, then no overflow
+		{
+			//no overflow in the leaf node, write the leaf node back to page
+			if(rc = leaf.write(input_pid, pf))
+				return rc;
+			//comes here, leaf node is updated and written back
+			return 0;//return correct code
+		}
+
+	}
 }
