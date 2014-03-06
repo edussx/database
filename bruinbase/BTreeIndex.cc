@@ -9,7 +9,7 @@
  
 #include "BTreeIndex.h"
 #include "BTreeNode.h"
-
+#include <iostream>
 using namespace std;
 
 /*
@@ -31,10 +31,11 @@ BTreeIndex::BTreeIndex()
 RC BTreeIndex::open(const string& indexname, char mode)
 {
 	RC rc;
-	char buffer[PAGE_SIZE];
+	char buffer[PageFile::PAGE_SIZE];
 
 	rc = pf.open(indexname, mode);
-	if (rc == 0 && mode = 'r')
+	//cout << "rc is: " << rc << endl;
+	if (rc == 0)
 	{
 		if (pf.endPid() == 0)
 		{
@@ -56,6 +57,7 @@ RC BTreeIndex::open(const string& indexname, char mode)
 				memcpy(&rootPid, buffer, sizeof(PageId));
 				memcpy(&treeHeight, buffer + sizeof(PageId), sizeof(int));
 			}
+			else return rc;
 		}
 	}
 
@@ -69,7 +71,7 @@ RC BTreeIndex::open(const string& indexname, char mode)
 RC BTreeIndex::close()
 {
 	RC rc;
-	char buffer[PAGE_SIZE];
+	char buffer[PageFile::PAGE_SIZE];
 
 	//write rootPid and treeHeight back to disk
 	memcpy(buffer, &rootPid, sizeof(PageId));
@@ -97,7 +99,7 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
 	if (rootPid == -1)
 	{
 		//pid 0 is reserved for rootPid and treeHeight
-		PageId rootPid = 1; 
+		rootPid = 1; 
 		PageId lpid = 2;
 		PageId rpid = 3;
 
@@ -107,7 +109,7 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
 		rc = leftleaf.write(lpid, pf);
 		if (rc != 0) return rc;
 		//write rightnode
-		rc = rightleaf.insert(key, rid);
+		rc = rightleaf.insert(key, rid); 
 		if (rc != 0) return rc;
 		rc = rightleaf.write(rpid, pf);
 		if (rc != 0) return rc;
@@ -119,6 +121,7 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
 		if (rc != 0) return rc;
 		
 		treeHeight = 2;
+
 	}
 	//tree is not empty
 	else
@@ -157,12 +160,16 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
     BTNonLeafNode nonleaf;
     //rc for error code info
     RC rc;
+    //cout<<"mark 0 "<<rootPid<<endl;
     if(rc = nonleaf.read(rootPid, pf))//if rc is not 0
     	return rc;//return the error code
+    //cout<<"mark 1"<<endl;
     //now nonleaf contains the root
     if(rc = nonleaf.locateChildPtr(searchKey, cur_pid))
     	return rc;
+    //cout<<"mark 2"<<endl;
     cur_height++;
+    //cout<<"comes here height should be 2: "<<cur_height<<endl;
     while(cur_height < treeHeight)//if it is not the leaf
     {
     	//now nonleaf contains the child of root
@@ -176,13 +183,16 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
     //when exit, it means we reach the leaf node, 
     //and cur_pid contains the leaf pid
     BTLeafNode leaf;
+    //cout << cur_pid << endl;
     if(rc = leaf.read(cur_pid, pf))
     	return rc;
+    //cout<<"mark 3"<<endl;
     //now leaf contains the leaf node
     //if error code is not 0, it means RC_NO_SUCH_RECORD
     //no record has equal or larger key than the searchKey
     if(rc = leaf.locate(searchKey, eid))
     	return rc;
+    //cout<<"mark 4"<<endl;
     //if error code is 0, it means there is a record
     //assign value to the cursor, pid and eid
     cursor.pid = cur_pid;

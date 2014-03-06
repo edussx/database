@@ -134,10 +134,17 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
   RecordFile rf;   // RecordFile containing the table
   RecordId   rid;  // record cursor for table scanning
   ifstream infile(loadfile.c_str());  //Read file; Must use c_str() since it's C++03
-  
+  BTreeIndex treeindex;
+
   RC     rc;
   int    key;     
   string line, value;
+
+  if (index == 1)
+  {
+    rc = treeindex.open(table + ".idx", 'w');
+    if (rc != 0) return rc;  
+  }
 
   //Open the table file
   //Open a file in read or write mode. (r/w)

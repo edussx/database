@@ -13,6 +13,7 @@ BTLeafNode::BTLeafNode(PageId pid)
 :m_pid(pid)
 {
 	setKeyCount(0);
+	setNextNodePtr(-1);
 }
 
 PageId BTLeafNode::getCurrentPid()
@@ -148,7 +149,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 	//Inserted (key, rid) is at the mid of the node
 	setKeyCount(getKeyCount() + 1);
 
-	return rc;
+	return 0;
 }
 
 /*
@@ -247,7 +248,7 @@ RC BTLeafNode::locate(int searchKey, int& eid)
 //pp: in RecordID, first 4 is pid and next 4 is sid
 RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
 {
-	if (eid > getKeyCount() || eid < 0)
+	if (eid >= getKeyCount() || eid < 0)
 		return RC_NO_SUCH_RECORD; 
 	
 	char* RecordIdAddress_pid = buffer + sizeof(PageId) + sizeof(int) + eid * LEAFNODEOFFSET;
@@ -554,9 +555,14 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
 		{
 			continue;
 		}
+		else if (*(int*)(init + i * NONLEAFNODEOFFSET + sizeof(PageId)) == searchKey)
+		{
+			pid = *(int*)(init + (i+1) * NONLEAFNODEOFFSET);
+			return 0;
+		}
 		else
 		{
-			pid = *(int*)(init + i * NONLEAFNODEOFFSET);
+			pid = *(int*)(init + (i) * NONLEAFNODEOFFSET);
 			return 0;
 		}
 	}

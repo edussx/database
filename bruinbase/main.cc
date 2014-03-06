@@ -10,6 +10,7 @@
 #include "Bruinbase.h"
 #include "SqlEngine.h"
 #include "BTreeNode.h"
+//#include "BTreeIndex.h"
 #include <cstring>
 #include <iostream>
 using namespace std;
@@ -326,10 +327,39 @@ void test9()
 	cout << endl;
 }
 
+void test10()
+{
+	BTreeIndex myIndex;
+	myIndex.open("testIndex.idx", 'w');
+	//myIndex.open("testIndex.idx", 'r');
+
+	RecordId testid;
+	testid.pid = 9;
+	testid.sid = 9;
+
+	int key = 20;
+	int rc;
+	int myKey;
+
+	rc = myIndex.insert(key, testid);
+	
+
+	IndexCursor myCursor;
+	myCursor.pid = -1;
+	myCursor.eid = -1;
+	myIndex.locate(19, myCursor);
+	myIndex.readForward(myCursor, myKey, testid);
+	
+	cout << "Key should be 20: " << key << endl;
+	cout << "pid should be 9: " << testid.pid << " eid should be 9: " << testid.sid << endl;
+
+	myIndex.close();
+}
+
 int main()
 {
   // run the SQL engine taking user commands from standard input (console).
-  SqlEngine::run(stdin);
+  //SqlEngine::run(stdin);
 
   	//test();
   	//test2();
@@ -340,5 +370,6 @@ int main()
 	//test7();
 	//test8();
 	//test9();
+	test10();
   return 0;
 }

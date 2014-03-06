@@ -13,6 +13,7 @@
 #include <vector>
 #include "Bruinbase.h"
 #include "RecordFile.h"
+#include "BTreeIndex.h"
 
 /**
  * data structure to represent a condition in the WHERE clause
