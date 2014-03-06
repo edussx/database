@@ -225,7 +225,7 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
     	//cout << leaf.getNextNodePtr() << endl;
 		if(leaf.getNextNodePtr() != -1)
 		{
-			cout << "mark 3.25" << endl;
+			//cout << "mark 3.25" << endl;
 			cursor.pid = leaf.getNextNodePtr();
 			cursor.eid = 0;
 			return 0;
@@ -274,6 +274,7 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     {
     	cursor.eid = 0;
     	cursor.pid = leaf.getNextNodePtr();
+    	if (pid == -1) return RC_END_OF_TREE; 
     }
     //else, cursor.pid no change, cursor.eid no change
     return 0;
