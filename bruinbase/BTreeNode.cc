@@ -269,7 +269,8 @@ RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
 PageId BTLeafNode::getNextNodePtr()
 {
 	char* NextNodeAddress = buffer;
-	int NextPtr = *((int*)NextNodeAddress); 
+	int NextPtr = *((int*)NextNodeAddress);
+
 	return NextPtr; 
 }
 
@@ -422,7 +423,7 @@ RC BTNonLeafNode::insert(int key, PageId pid)
 	//Inserted (key, rid) is at the mid of the node
 	setKeyCount(getKeyCount() + 1);
 
-	return rc;
+	return 0;
 }
 
 /*

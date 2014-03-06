@@ -339,7 +339,7 @@ void test10()
 
 	int key = 20;
 	int rc;
-	int myKey;
+	int myKey = 0;
 
 	rc = myIndex.insert(key, testid);
 	
@@ -347,10 +347,55 @@ void test10()
 	IndexCursor myCursor;
 	myCursor.pid = -1;
 	myCursor.eid = -1;
-	myIndex.locate(19, myCursor);
+	rc = myIndex.locate(20, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	//cout << rc << endl;
 	myIndex.readForward(myCursor, myKey, testid);
 	
-	cout << "Key should be 20: " << key << endl;
+	cout << "Key should be 20: " << myKey << endl;
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	myIndex.close();
+}
+
+void test11()
+{
+	BTreeIndex myIndex;
+	myIndex.open("testIndex.idx", 'w');
+	//myIndex.open("testIndex.idx", 'r');
+
+	RecordId testid;
+	testid.pid = 9;
+	testid.sid = 9;
+
+	int key = 20;
+	int rc;
+	int myKey = 0;
+
+	rc = myIndex.insert(20, testid);
+	//testid.pid = 8;
+	//testid.sid = 8;
+	rc = myIndex.insert(21, testid);
+	rc = myIndex.insert(18, testid);
+	rc = myIndex.insert(22, testid);
+	rc = myIndex.insert(23, testid);
+
+	rc = myIndex.insert(24, testid);
+	rc = myIndex.insert(25, testid);
+	rc = myIndex.insert(26, testid);
+	
+	rc = myIndex.insert(27, testid);
+	rc = myIndex.insert(28, testid);
+	
+	rc = myIndex.insert(29, testid);
+	rc = myIndex.insert(30, testid);
+	IndexCursor myCursor;
+	myCursor.pid = -1;
+	myCursor.eid = -1;
+	myIndex.locate(24, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	myIndex.readForward(myCursor, myKey, testid);
+	
+	cout << "Key should be 19: " << myKey << endl;
 	cout << "pid should be 9: " << testid.pid << " eid should be 9: " << testid.sid << endl;
 
 	myIndex.close();
@@ -370,6 +415,7 @@ int main()
 	//test7();
 	//test8();
 	//test9();
-	test10();
+	//test10();
+	//test11();
   return 0;
 }
