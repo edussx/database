@@ -37,21 +37,21 @@ RC BTreeIndex::open(const string& indexname, char mode)
 	//if (rc != 0) return rc;
 	if (rc == 0 && mode == 'r')
 	{
-		/*
-		buffer:
-		 -------------------
-		|4 bytes|4 bytes|...|
-		 -------------------
-		rootPid treeHeight
-		*/
-		rc = pf.read(0, buffer);
-		cout << "rc is: " << rc << endl;
-		if (rc == 0)
-		{
-			memcpy(&rootPid, buffer, sizeof(PageId));
-			memcpy(&treeHeight, buffer + sizeof(PageId), sizeof(int));
-		}
-		else return rc;
+			/*
+			buffer:
+			 -------------------
+			|4 bytes|4 bytes|...|
+			 -------------------
+			rootPid treeHeight
+			*/
+			rc = pf.read(0, buffer);
+			//cout << "rc is: " << rc << endl;
+			if (rc == 0)
+			{
+				memcpy(&rootPid, buffer, sizeof(PageId));
+				memcpy(&treeHeight, buffer + sizeof(PageId), sizeof(int));
+			}
+			else return rc;
 	}
     return rc;
 }
