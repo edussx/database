@@ -36,6 +36,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 {
   RecordFile rf;   // RecordFile containing the table
   RecordId   rid;  // record cursor for table scanning
+  BTreeIndex treeindex;
 
   RC     rc;
   int    key;     
@@ -140,32 +141,45 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
   int    key;     
   string line, value;
 
-  if (index == 1)
+  if (index == true)
   {
     rc = treeindex.open(table + ".idx", 'w');
-    if (rc != 0) return rc;  
+    //cout << "mark 0" << endl;
+    if (rc != 0) {treeindex.close(); return rc;}  
   }
 
   //Open the table file
   //Open a file in read or write mode. (r/w)
   //When opened in 'w' mode, if the file does not exist, it is created.
-  if ((rc = rf.open(table + ".tbl", 'w')) == 0) {
+  rc = rf.open(table + ".tbl", 'w');
+  if (rc !=0) return rc;
+
     //Get each line from loadfile
-    while (getline(infile, line))
+  while (getline(infile, line))
+  {
+    rid = rf.endRid();
+    //Get key and value by using parseLoadLine()
+    //Get the last record id. Note rid is an instant of class RecordId
+    parseLoadLine(line, key, value);
+    rc = rf.append(key, value, rid);
+    //cout << "mark 1" << endl;
+    if (rc != 0) return rc;
+    if (index == true)
     {
-      //Get key and value by using parseLoadLine()
-      //Get the last record id. Note rid is an instant of class RecordId
-      parseLoadLine(line, key, value);
-      rid = rf.endRid();
-      rc = rf.append(key, value, rid);
+      //rc = treeindex.open(table + ".idx", 'w');
+      //if (rc != 0) return rc;  
+      rc = treeindex.insert(key, rid);
+      //cout << "mark 2" << endl;
       if (rc != 0) return rc;
+      //treeindex.close();
     }
-    return rc;
   }
 
   //Close the table file
   rf.close();
-  return rc;
+  //Close the index file
+  if (index == true) treeindex.close();
+  return 0;
 }
 
 RC SqlEngine::parseLoadLine(const string& line, int& key, string& value)

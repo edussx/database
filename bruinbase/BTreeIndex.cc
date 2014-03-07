@@ -34,33 +34,25 @@ RC BTreeIndex::open(const string& indexname, char mode)
 	char buffer[PageFile::PAGE_SIZE];
 
 	rc = pf.open(indexname, mode);
-	//cout << "rc is: " << rc << endl;
-	if (rc == 0)
+	//if (rc != 0) return rc;
+	if (rc == 0 && mode == 'r')
 	{
-		// if (pf.endPid() == 0)
-		// {
-		// 	rootPid = -1;
-		// 	treeHeight = 0;
-		// }
-		// else
-		// {
-			/*
-			buffer:
-			 -------------------
-			|4 bytes|4 bytes|...|
-			 -------------------
-			rootPid treeHeight
-			*/
-			rc = pf.read(0, buffer);
-			if (rc == 0)
-			{
-				memcpy(&rootPid, buffer, sizeof(PageId));
-				memcpy(&treeHeight, buffer + sizeof(PageId), sizeof(int));
-			}
-			else return rc;
-		//}
+		/*
+		buffer:
+		 -------------------
+		|4 bytes|4 bytes|...|
+		 -------------------
+		rootPid treeHeight
+		*/
+		rc = pf.read(0, buffer);
+		cout << "rc is: " << rc << endl;
+		if (rc == 0)
+		{
+			memcpy(&rootPid, buffer, sizeof(PageId));
+			memcpy(&treeHeight, buffer + sizeof(PageId), sizeof(int));
+		}
+		else return rc;
 	}
-
     return rc;
 }
 
@@ -274,7 +266,7 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     {
     	cursor.eid = 0;
     	cursor.pid = leaf.getNextNodePtr();
-    	if (pid == -1) return RC_END_OF_TREE; 
+    	if (cursor.pid == -1) return RC_END_OF_TREE; 
     }
     //else, cursor.pid no change, cursor.eid no change
     return 0;

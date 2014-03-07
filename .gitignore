@@ -11,3 +11,13 @@
 *.lai
 *.la
 *.a
+
+#
+bruinbase/large.*
+bruinbase/medium.*
+bruinbase/output.txt
+bruinbase/small.*
+bruinbase/test.*
+bruinbase/test2.*
+bruinbase/xlarge.*
+bruinbase/xsmall.*
