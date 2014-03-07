@@ -85,35 +85,40 @@ RC BTreeIndex::close()
 RC BTreeIndex::insert(int key, const RecordId& rid)
 {
 	RC rc;
-	BTNonLeafNode root;
-	BTLeafNode leftleaf, rightleaf;
+	//BTNonLeafNode root;
+	//BTLeafNode leftleaf, rightleaf;
+	BTLeafNode leaf_root;
 	//Initialize a new tree
 	if (rootPid == -1)
 	{
 		//pid 0 is reserved for rootPid and treeHeight
 
 		rootPid = 1; //pp: wrong here, rootPid is a data member
-		PageId lpid = 2;
-		PageId rpid = 3;
+		//PageId lpid = 2;
+		// PageId rpid = 3;
 
-		//write leftnode, which is empty at initialization
-		rc = leftleaf.setNextNodePtr(rpid);
-		if (rc != 0) return rc;
-		rc = leftleaf.write(lpid, pf);
-		if (rc != 0) return rc;
-		//write rightnode
-		rc = rightleaf.insert(key, rid); 
-		if (rc != 0) return rc;
-		rc = rightleaf.write(rpid, pf);
-		if (rc != 0) return rc;
-		//init root
-		rc = root.initializeRoot(lpid, key, rpid);
-		if (rc != 0) return rc;
-		//write root
-		rc = root.write(rootPid, pf);
-		if (rc != 0) return rc;
-		
-		treeHeight = 2;
+		// //write leftnode, which is empty at initialization
+		// rc = leftleaf.setNextNodePtr(rpid);
+		// if (rc != 0) return rc;
+		// rc = leftleaf.write(lpid, pf);
+		// if (rc != 0) return rc;
+		// //write rightnode
+		// rc = rightleaf.insert(key, rid); 
+		// if (rc != 0) return rc;
+		// rc = rightleaf.write(rpid, pf);
+		// if (rc != 0) return rc;
+		// //init root
+		// rc = root.initializeRoot(lpid, key, rpid);
+		// if (rc != 0) return rc;
+		// //write root
+		// rc = root.write(rootPid, pf);
+		// if (rc != 0) return rc;
+
+		if(rc = leaf_root.insert(key, rid))//insert the key rid to the leaf_root
+			return rc;
+		if(rc = leaf_root.write(rootPid, pf))//write back the leaf root
+			return rc;
+		treeHeight = 1;//change here, initial tree has only one level
 
 		return 0;
 	}
@@ -182,7 +187,25 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
     BTNonLeafNode nonleaf;
     //rc for error code info
     RC rc;
-    //cout<<"mark 0 "<<rootPid<<endl;
+    if(treeHeight == 1)//note change here
+	{
+		BTLeafNode leaf_root;//there is only one leaf node and it is the root
+		if(rc = leaf_root.read(rootPid, pf))//load the leaf node from rootPid
+			return rc;
+		if(rc = leaf_root.locate(searchKey, eid))//search for the key
+		{
+			cursor.pid = -1;//if not found, set to -1
+			cursor.eid = -1;//if not found, set to -1
+			return rc;//if not found, return error code RC_NO_SUCH_RECORD
+		}
+		else
+		{
+			cursor.pid = rootPid;//if found, set to correct id
+			cursor.eid = eid;//if found, set to correct id
+			return 0;//if found, return 0
+		}
+	}
+    //cout<<"mark 0 "<<rootPid<<endl; if comes here, there is at least two level nodes
     if(rc = nonleaf.read(rootPid, pf))//if rc is not 0
     	return rc;//return the error code
     //cout<<"mark 1"<<endl;
@@ -225,6 +248,8 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
 		else 
 		{
 			//cout << "mark 3.5" << endl;
+			cursor.pid = -1;//if not found, set to -1
+			cursor.eid = -1;//if not found, set to -1
 			return RC_NO_SUCH_RECORD; 
 		}
     }
