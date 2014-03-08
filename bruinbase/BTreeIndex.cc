@@ -19,6 +19,8 @@ BTreeIndex::BTreeIndex()
 {
     rootPid = -1;
     treeHeight = 0;
+    m_minkey = m_maxkey = -1;//new statistc info
+    m_keycount = 0;//new statistc info
 }
 
 /*
@@ -50,6 +52,9 @@ RC BTreeIndex::open(const string& indexname, char mode)
 			{
 				memcpy(&rootPid, buffer, sizeof(PageId));
 				memcpy(&treeHeight, buffer + sizeof(PageId), sizeof(int));
+				memcpy(&m_minkey, buffer + 2 * sizeof(PageId), sizeof(int));//new statistc info
+				memcpy(&m_maxkey, buffer + 3 * sizeof(PageId), sizeof(int));//new statistc info
+				memcpy(&m_keycount, buffer + 4 * sizeof(PageId), sizeof(int));//new statistc info
 			}
 			else return rc;
 	}
@@ -68,6 +73,9 @@ RC BTreeIndex::close()
 	//write rootPid and treeHeight back to disk
 	memcpy(buffer, &rootPid, sizeof(PageId));
 	memcpy(buffer + sizeof(PageId), &treeHeight, sizeof(int));
+	memcpy(buffer + 2 * sizeof(PageId), &m_minkey, sizeof(int));//new statistc info
+	memcpy(buffer + 3 * sizeof(PageId), &m_maxkey, sizeof(int));//new statistc info
+	memcpy(buffer + 4 * sizeof(PageId), &m_keycount, sizeof(int));//new statistc info
 
 	rc = pf.write(0, buffer);
 	if (rc != 0) return rc;
@@ -119,7 +127,8 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
 		if(rc = leaf_root.write(rootPid, pf))//write back the leaf root
 			return rc;
 		treeHeight = 1;//change here, initial tree has only one level
-
+		m_minkey = m_maxkey = key;//new statistc info
+		m_keycount ++;//new statistc info
 		return 0;
 	}
 	//tree is not empty
@@ -133,6 +142,11 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
 
 		if(rc = recInsert(key, rid, rootPid, m_flag, m_Sibling_key, m_Sibling_pid, 1))//start from rootPid
 			return rc;
+		m_keycount++;//new statistc info
+		if(key < m_minkey)//new statistc info
+			m_minkey = key;//new statistc info
+		if(key > m_maxkey)//new statistc info
+			m_maxkey = key;//new statistc info
 		if(m_flag)//new root is needed, treeHeight ++
 		{
 			//new_root
