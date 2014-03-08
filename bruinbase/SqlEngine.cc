@@ -53,8 +53,9 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   int keyMin = INTMIN; //min int
   int keyMax = INTMAX;  //max int
   SelCond tmp;
-  int a;
- char m_temp[32];
+  //int a;
+ //char m_temp[32];
+  int comp_value;
 
   for (unsigned i = 0; i < cond.size(); i++)
   {
@@ -62,32 +63,39 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     if (cond[i].attr == 1)
     {
       cout<<"cond info: i , comp, value "<<i<<" "<<cond[i].comp<<" "<<cond[i].value<<endl;
+      comp_value = atoi(cond[i].value);
       //TODO
       switch (cond[i].comp)
       {
-          case SelCond::EQ:
-          cout<<"Hello Yeah "<<endl;
-        //strcpy(tmp.value, cond[i].value);
-         tmp.comp = SelCond::LT;
-         a = atoi(cond[i].value); a++;
-         // char * m_temp;
-         sprintf(m_temp, "%d", a);
-         strcpy(tmp.value, m_temp);
-         key_cond.push_back(tmp);
-         cout << "LT a: " << a;
+            case SelCond::EQ:
+            if(comp_value > keyMin)
+              keyMin = comp_value;
+            if(comp_value + 1 < keyMax)
+              keyMax = comp_value + 1;
+
+        //   cout<<"Hello Yeah "<<endl;
+        // //strcpy(tmp.value, cond[i].value);
+        //  tmp.comp = SelCond::LT;
+        //  a = atoi(cond[i].value); a++;
+        //  // char * m_temp;
+        //  sprintf(m_temp, "%d", a);
+        //  strcpy(tmp.value, m_temp);
+        //  key_cond.push_back(tmp);
+        //  cout << "LT a: " << a;
 
 
-        tmp.comp = SelCond::GE;
-        a = atoi(tmp.value);
-        //char * m_temp_1;
-         sprintf(m_temp, "%d", a);
-         strcpy(tmp.value, m_temp);
-        key_cond.push_back(tmp);
-        cout << "GE a: " << a;
+        // tmp.comp = SelCond::GE;
+        // a = atoi(tmp.value);
+        // //char * m_temp_1;
+        //  sprintf(m_temp, "%d", a);
+        //  strcpy(tmp.value, m_temp);
+        // key_cond.push_back(tmp);
+        // cout << "GE a: " << a;
         break;
 
             case SelCond::NE:
-        value_cond.push_back(cond[i]);
+        // value_cond.push_back(cond[i]);
+            key_cond.push_back(cond[i]);//new change
         break;
 
             case SelCond::GT:
@@ -99,22 +107,31 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         // //sprintf(m_temp, "%d", a);
         // //strcpy(tmp.value, m_temp);
         // key_cond.push_back(tmp);
+            if(comp_value + 1 > keyMin)
+              keyMin = comp_value + 1;
+
 
         break;
             case SelCond::LT:
-        key_cond.push_back(cond[i]);
-        cout<< cond[i].comp<<endl;
+        // key_cond.push_back(cond[i]);
+        // cout<< cond[i].comp<<endl;
+            if(comp_value < keyMax)
+              keyMax = comp_value;
         break;
             case SelCond::GE:
-        key_cond.push_back(cond[i]);
+        // key_cond.push_back(cond[i]);
+            if(comp_value > keyMin)
+              keyMin = comp_value;
         break;
             case SelCond::LE:
         //strcpy(tmp.value, cond[i].value);
-        tmp.comp = SelCond::LT;
-        a = atoi(cond[i].value); a++;
-        sprintf(m_temp, "%d", a);
-        strcpy(tmp.value, m_temp);
-        key_cond.push_back(tmp);
+        // tmp.comp = SelCond::LT;
+        // a = atoi(cond[i].value); a++;
+        // sprintf(m_temp, "%d", a);
+        // strcpy(tmp.value, m_temp);
+        // key_cond.push_back(tmp);
+            if(comp_value + 1 < keyMax)
+              keyMax = comp_value + 1;
         break;
       }
     }
@@ -122,30 +139,32 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       value_cond.push_back(cond[i]);
   }
 
-  for (unsigned i = 0; i < key_cond.size(); i++)
-  {
-    if (key_cond[i].comp == SelCond::LT)
-    {
-      if (atoi(key_cond[i].value) < keyMax)
-        keyMax = atoi(key_cond[i].value);
-    }
-    if (key_cond[i].comp == SelCond::GE)
-    {
-      if (atoi(key_cond[i].value) > keyMin)
-        keyMin = atoi(key_cond[i].value);
-    }
-  }
+  // for (unsigned i = 0; i < key_cond.size(); i++)
+  // {
+  //   if (key_cond[i].comp == SelCond::LT)
+  //   {
+  //     if (atoi(key_cond[i].value) < keyMax)
+  //       keyMax = atoi(key_cond[i].value);
+  //   }
+  //   if (key_cond[i].comp == SelCond::GE)
+  //   {
+  //     if (atoi(key_cond[i].value) > keyMin)
+  //       keyMin = atoi(key_cond[i].value);
+  //   }
+  // }
 
   cout << "key min: " << keyMin << endl;
   cout << "key max: " << keyMax << endl;
 
-  if (keyMin >= keyMax) return 0;
+  //if (keyMin >= keyMax) return 0;
+  if (keyMin >= keyMax || keyMax<= getMin || keyMin>= getMax + 1) return 0;//new change
 
   int getMin, getMax, getCount;
   if ((rc = treeindex.open(table + ".idx", 'r')) == 0)
   {
     rc = treeindex.readInfo(getMin, getMax, getCount);
-    if ((key_cond.size() != 0) && !(keyMin <= getMin && keyMax >= getMax))
+    //if ((key_cond.size() != 0) && !(keyMin <= getMin && keyMax >= getMax))
+    if(!(keyMin <= getMin && keyMax >= getMax))//new change
       ifIndex = true;
   }
   else
