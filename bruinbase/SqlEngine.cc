@@ -96,6 +96,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             case SelCond::NE:
         // value_cond.push_back(cond[i]);
             key_cond.push_back(cond[i]);//new change
+            //value_cond.push_back(cond[i]);//new change
         break;
 
             case SelCond::GT:
@@ -164,7 +165,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   {
     rc = treeindex.readInfo(getMin, getMax, getCount);
     //if ((key_cond.size() != 0) && !(keyMin <= getMin && keyMax >= getMax))
-    if(!(keyMin <= getMin && keyMax >= getMax))//new change
+    if(
+        !(keyMin <= getMin && keyMax >= getMax) ||
+        ((attr == 4 || attr == 1) && value_cond.empty())//no need to read value
+      )//new change
       ifIndex = true;
   }
   else
@@ -274,7 +278,6 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     count = 0;
 
     rc = treeindex.locate(keyMin, start_cursor);
-
     if (rc != 0) return rc;
     cout << "start cursor: " << start_cursor.pid << "  start curssor:  " << start_cursor.eid << endl;
     rc = treeindex.locate(keyMax, end_cursor);
@@ -289,71 +292,107 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       if(rc = treeindex.readForward(cursor, key, rid))
         return rc;
       cout<<"info: key, pid, sid are "<<key<<" "<<cursor.pid<<" "<<cursor.eid<<endl;
-      if ((rc = rf.read(rid, key, value)) < 0) 
+
+      //new change here to reduce IO
+      //when select key or select count, and value condition is empty
+      if((attr == 4 || attr == 1) && value_cond.empty())//no need to go to read out value
       {
-        fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
-        goto exit_select;
+        for(unsigned i = 0; i < key_cond.size(); i++)
+        {
+          //no switch (key_cond[i].attr) here , because all are key cond
+          diff = key - atoi(key_cond[i].value);
+          //no switch key_cond[i].comp here, because all are NE comp
+          if (diff == 0) goto next_tuple0;//condition not met, not count and not print
+
+        }
+        //condition met, count ++ and if select key, print out the key
+        count ++;
+        if(attr == 1)
+          fprintf(stdout, "%d\n", key);
+        //task finish, go to next tuple0
+        goto next_tuple0;
       }
 
-          // check the conditions on the tuple
-      cout << "size: " << value_cond.size() << endl;
-      for (unsigned i = 0; i < value_cond.size(); i++) 
+      else//either select * or select value or value condition is not empty
       {
-        // compute the difference between the tuple value and the value_condition value
-        switch (value_cond[i].attr) 
+
+        if ((rc = rf.read(rid, key, value)) < 0) 
         {
-              case 1:
-          diff = key - atoi(value_cond[i].value);
-          break;
-              case 2:
+          fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
+          goto exit_select;
+        }
+
+            // check the conditions on the tuple, first for key_cond
+        for(unsigned i = 0; i < key_cond.size(); i++)
+        {
+          //no switch (key_cond[i].attr) here , because all are key cond
+          diff = key - atoi(key_cond[i].value);
+          //no switch key_cond[i].comp here, because all are NE comp
+          if (diff == 0) goto next_tuple0;//condition not met, not count and not print
+        }
+
+        cout << "size: " << value_cond.size() << endl;
+        for (unsigned i = 0; i < value_cond.size(); i++) 
+        {
+          // compute the difference between the tuple value and the value_condition value
+          
+          // switch (value_cond[i].attr) 
+          // {
+          //       case 1:
+          //   diff = key - atoi(value_cond[i].value);
+          //   break;
+          //       case 2:
+          //   diff = strcmp(value.c_str(), value_cond[i].value);
+          //   break;
+          // }
+
+          //no switch (value_cond[i].attr) here , because all are value cond
           diff = strcmp(value.c_str(), value_cond[i].value);
-          break;
+
+            cout << "diff: " << diff << endl;
+            cout << "comp: " << value_cond[i].comp << endl;
+          // skip the tuple if any value_condition is not met
+          switch (value_cond[i].comp) 
+          {
+                case SelCond::EQ:
+            if (diff != 0) goto next_tuple0;
+            break;
+                case SelCond::NE:
+            if (diff == 0) goto next_tuple0;
+            break;
+                case SelCond::GT:
+            if (diff <= 0) goto next_tuple0;
+            break;
+                case SelCond::LT:
+            if (diff >= 0) goto next_tuple0;
+            break;
+                case SelCond::GE:
+            if (diff < 0) goto next_tuple0;
+            break;
+                case SelCond::LE:
+            if (diff > 0) goto next_tuple0;
+            break;
+          }
         }
 
-          cout << "diff: " << diff << endl;
-          cout << "comp: " << value_cond[i].comp << endl;
-        // skip the tuple if any value_condition is not met
-        switch (value_cond[i].comp) 
+        // the condition is met for the tuple. 
+        // increase matching tuple counter
+        count++;
+
+              // print the tuple 
+        switch (attr) 
         {
-              case SelCond::EQ:
-          if (diff != 0) goto next_tuple0;
-          break;
-              case SelCond::NE:
-          if (diff == 0) goto next_tuple0;
-          break;
-              case SelCond::GT:
-          if (diff <= 0) goto next_tuple0;
-          break;
-              case SelCond::LT:
-          if (diff >= 0) goto next_tuple0;
-          break;
-              case SelCond::GE:
-          if (diff < 0) goto next_tuple0;
-          break;
-              case SelCond::LE:
-          if (diff > 0) goto next_tuple0;
-          break;
+            case 1:  // SELECT key
+              fprintf(stdout, "%d\n", key);
+              break;
+            case 2:  // SELECT value
+              fprintf(stdout, "%s\n", value.c_str());
+              break;
+            case 3:  // SELECT *
+              fprintf(stdout, "%d '%s'\n", key, value.c_str());
+              break;
         }
 
-       
-      }
-
-      // the condition is met for the tuple. 
-      // increase matching tuple counter
-      count++;
-
-            // print the tuple 
-      switch (attr) 
-      {
-          case 1:  // SELECT key
-            fprintf(stdout, "%d\n", key);
-            break;
-          case 2:  // SELECT value
-            fprintf(stdout, "%s\n", value.c_str());
-            break;
-          case 3:  // SELECT *
-            fprintf(stdout, "%d '%s'\n", key, value.c_str());
-            break;
       }
 
       next_tuple0:
