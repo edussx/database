@@ -91,6 +91,7 @@ class BTreeIndex {
   RC readForward(IndexCursor& cursor, int& key, RecordId& rid);
 
   RC recInsert(int key, const RecordId& rid, PageId input_pid, bool& flag, int& Sibling_key, PageId& Sibling_pid, int height);
+  RC readInfo(int & minkey, int & maxkey, int & keycount);
   
  private:
   PageFile pf;         /// the PageFile used to store the actual b+tree in disk
@@ -101,6 +102,14 @@ class BTreeIndex {
   /// this class is destructed. Make sure to store the values of the two 
   /// variables in disk, so that they can be reconstructed when the index
   /// is opened again later.
+  int m_minkey, m_maxkey, m_keycount;//three data member for the statistic info
 };
 
+inline RC BTreeIndex::readInfo(int & minkey, int & maxkey, int & keycount)//new member function to get the statistcs
+{
+  minkey = m_minkey;
+  maxkey = m_maxkey;
+  keycount = m_keycount;
+  return 0;
+}
 #endif /* BTREEINDEX_H */
