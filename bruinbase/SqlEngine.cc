@@ -12,6 +12,7 @@
 #include <fstream>
 #include "Bruinbase.h"
 #include "SqlEngine.h"
+#include <assert>
 
 using namespace std;
 
@@ -170,6 +171,14 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         ((attr == 4 || attr == 1) && value_cond.empty())//no need to read value
       )//new change
       ifIndex = true;
+
+    if(attr == 4 && key_cond.empty() && value_cond.empty() && (keyMin <= getMin) &&(keyMax > getMax))
+      {
+        fprintf(stdout, "%d\n", getCount);
+        treeindex.close();
+        return 0;//end the select
+      }
+
   }
   else
     ifIndex = false;
@@ -298,6 +307,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
           //no switch (key_cond[i].attr) here , because all are key cond
           diff = key - atoi(key_cond[i].value);
           //no switch key_cond[i].comp here, because all are NE comp
+          assert(key_cond[i].comp == SelCond::NE);
           if (diff == 0) goto next_tuple0;//condition not met, not count and not print
 
         }
@@ -317,14 +327,14 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
           fprintf(stderr, "Error: table %s does not exist\n", table.c_str());
           return rc;
         }
-        
+
         if ((rc = rf.read(rid, key, value)) < 0) 
         {
           fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
           goto exit_select;
         }
 
-            // check the conditions on the tuple, first for key_cond
+        // check the conditions on the tuple, first for key_cond
         for(unsigned i = 0; i < key_cond.size(); i++)
         {
           //no switch (key_cond[i].attr) here , because all are key cond
@@ -332,7 +342,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
           //no switch key_cond[i].comp here, because all are NE comp
           if (diff == 0) goto next_tuple0;//condition not met, not count and not print
         }
-
+        // check the conditions on the tuple, seconc for value_cond
         cout << "size: " << value_cond.size() << endl;
         for (unsigned i = 0; i < value_cond.size(); i++) 
         {
