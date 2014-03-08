@@ -15,6 +15,8 @@
 #include "RecordFile.h"
 #include "BTreeIndex.h"
 
+const signed int INTMAX = 2147483647;
+const signed int INTMIN = -2;
 /**
  * data structure to represent a condition in the WHERE clause
  */
@@ -22,7 +24,16 @@ struct SelCond {
   int attr;     // attribute: 1 - key column,  2 - value column
   enum Comparator { EQ, NE, LT, GT, LE, GE } comp;
   char* value;  // the value to compare
+  //SelCond& operator= (const SelCond& s);
 };
+
+// inline
+// SelCond& SelCond::operator= (const SelCond& s)
+// {
+//   attr = s.attr;
+//   comp = s.comp;
+//   strcpy(value, s.value);
+// }
 
 /**
  * the class that takes, parses, and executes the user commands.

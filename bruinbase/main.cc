@@ -422,18 +422,22 @@ void test11()
 	cout << myCursor.pid << " " << myCursor.eid << endl;
 	rc = myIndex.locate(41, myCursor);
 	cout << myCursor.pid << " " << myCursor.eid << endl;
+	myIndex.locate(2147483647, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
 	//myIndex.readForward(myCursor, myKey, testid);
 	
 	//cout << "Key should be 19: " << myKey << endl;
 	//cout << "pid should be 9: " << testid.pid << " eid should be 9: " << testid.sid << endl;
-
+	int min, max, count;
+	myIndex.readInfo(min, max, count);
+	cout << min << " " << max << " " << count << endl;
 	myIndex.close();
 }
 
 int main()
 {
   // run the SQL engine taking user commands from standard input (console).
-  //SqlEngine::run(stdin);
+  SqlEngine::run(stdin);
 
   	//test();
   	//test2();
@@ -445,6 +449,6 @@ int main()
 	//test8();
 	//test9();
 	//test10();
-	test11();
+	//test11();
   return 0;
 }

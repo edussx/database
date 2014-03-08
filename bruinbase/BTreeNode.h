@@ -14,8 +14,8 @@
 #include "PageFile.h"
 #include <cstring>
 
-#define MAXLEAFNODESIZE 4
-#define MAXNONLEAFNODESIZE 4
+#define MAXLEAFNODESIZE 80
+#define MAXNONLEAFNODESIZE 170
 //
 #define LEAFNODEOFFSET (sizeof(RecordId) + sizeof(int))// 12
 #define NONLEAFNODEOFFSET (sizeof(PageId) + sizeof(int)) // 8

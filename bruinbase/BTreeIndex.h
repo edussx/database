@@ -106,10 +106,6 @@ class BTreeIndex {
 };
 
 inline RC BTreeIndex::readInfo(int & minkey, int & maxkey, int & keycount)//new member function to get the statistcs
-{
-  minkey = m_minkey;
-  maxkey = m_maxkey;
-  keycount = m_keycount;
-  return 0;
-}
+{minkey = m_minkey; maxkey = m_maxkey; keycount = m_keycount; return 0;}
+
 #endif /* BTREEINDEX_H */
