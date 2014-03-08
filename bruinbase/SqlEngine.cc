@@ -267,11 +267,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     IndexCursor cursor;
     IndexCursor start_cursor;
     IndexCursor end_cursor;
-    // open the table file
-    if ((rc = rf.open(table + ".tbl", 'r')) < 0) {
-      fprintf(stderr, "Error: table %s does not exist\n", table.c_str());
-      return rc;
-    }
+
 
     // scan the table file from the beginning
     rid.pid = rid.sid = 0;
@@ -315,7 +311,13 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
       else//either select * or select value or value condition is not empty
       {
-
+        // open the table file
+        if ((rc = rf.open(table + ".tbl", 'r')) < 0) 
+        {
+          fprintf(stderr, "Error: table %s does not exist\n", table.c_str());
+          return rc;
+        }
+        
         if ((rc = rf.read(rid, key, value)) < 0) 
         {
           fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
