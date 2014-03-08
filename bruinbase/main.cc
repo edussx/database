@@ -357,83 +357,83 @@ using namespace std;
 // 	myIndex.close();
 // }
 
-// void test11()
-// {
-// 	BTreeIndex myIndex;
-// 	myIndex.open("testIndex.idx", 'w');
-// 	//myIndex.open("testIndex.idx", 'r');
+void test11()
+{
+	BTreeIndex myIndex;
+	myIndex.open("testIndex.idx", 'w');
+	//myIndex.open("testIndex.idx", 'r');
 
-// 	RecordId testid;
-// 	testid.pid = 9;
-// 	testid.sid = 9;
+	RecordId testid;
+	testid.pid = 9;
+	testid.sid = 9;
 
-// 	int key = 20;
-// 	int rc;
-// 	int myKey = 0;
+	int key = 20;
+	int rc;
+	int myKey = 0;
 
-// 	rc = myIndex.insert(20, testid);
+	rc = myIndex.insert(20, testid);
 	
-// 	rc = myIndex.insert(18, testid);
-// 	//testid.pid = 8;
-// 	//testid.sid = 8;
-// 	rc = myIndex.insert(31, testid);
+	rc = myIndex.insert(18, testid);
+	//testid.pid = 8;
+	//testid.sid = 8;
+	rc = myIndex.insert(31, testid);
 	
-// 	rc = myIndex.insert(32, testid);
-// 	rc = myIndex.insert(33, testid);
+	rc = myIndex.insert(32, testid);
+	rc = myIndex.insert(33, testid);
 
-// 	rc = myIndex.insert(34, testid);
-// 	rc = myIndex.insert(35, testid);
-// 	rc = myIndex.insert(36, testid);
+	rc = myIndex.insert(34, testid);
+	rc = myIndex.insert(35, testid);
+	rc = myIndex.insert(36, testid);
 	
-// 	rc = myIndex.insert(37, testid);
-// 	rc = myIndex.insert(38, testid);
+	rc = myIndex.insert(37, testid);
+	rc = myIndex.insert(38, testid);
 	
-// 	rc = myIndex.insert(39, testid);
-// 	rc = myIndex.insert(40, testid);
+	rc = myIndex.insert(39, testid);
+	rc = myIndex.insert(40, testid);
 
-// 	rc = myIndex.insert(25, testid);
+	rc = myIndex.insert(41, testid);
 
-// 	IndexCursor myCursor;
-// 	myCursor.pid = -1;
-// 	myCursor.eid = -1;
-// 	myIndex.locate(18, myCursor);
-// 	cout << myCursor.pid << " " << myCursor.eid << endl;
-// 	myIndex.locate(20, myCursor);
-// 	cout << myCursor.pid << " " << myCursor.eid << endl;
-// 	myIndex.locate(31, myCursor);
-// 	cout << myCursor.pid << " " << myCursor.eid << endl;
-// 	myIndex.locate(32, myCursor);
-// 	cout << myCursor.pid << " " << myCursor.eid << endl;
-// 	myIndex.locate(33, myCursor);
-// 	cout << myCursor.pid << " " << myCursor.eid << endl;
-// 	myIndex.locate(34, myCursor);
-// 	cout << myCursor.pid << " " << myCursor.eid << endl;
-// 	myIndex.locate(35, myCursor);
-// 	cout << myCursor.pid << " " << myCursor.eid << endl;
-// 	myIndex.locate(36, myCursor);
-// 	cout << myCursor.pid << " " << myCursor.eid << endl;
-// 	myIndex.locate(37, myCursor);
-// 	cout << myCursor.pid << " " << myCursor.eid << endl;
-// 	myIndex.locate(38, myCursor);
-// 	cout << myCursor.pid << " " << myCursor.eid << endl;
-// 	myIndex.locate(39, myCursor);
-// 	cout << myCursor.pid << " " << myCursor.eid << endl;
-// 	myIndex.locate(40, myCursor);
-// 	cout << myCursor.pid << " " << myCursor.eid << endl;
-// 	rc = myIndex.locate(25, myCursor);
-// 	cout << myCursor.pid << " " << myCursor.eid << endl;
-// 	//myIndex.readForward(myCursor, myKey, testid);
+	IndexCursor myCursor;
+	myCursor.pid = -1;
+	myCursor.eid = -1;
+	myIndex.locate(18, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	myIndex.locate(20, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	myIndex.locate(31, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	myIndex.locate(32, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	myIndex.locate(33, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	myIndex.locate(34, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	myIndex.locate(35, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	myIndex.locate(36, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	myIndex.locate(37, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	myIndex.locate(38, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	myIndex.locate(39, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	myIndex.locate(40, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	rc = myIndex.locate(41, myCursor);
+	cout << myCursor.pid << " " << myCursor.eid << endl;
+	//myIndex.readForward(myCursor, myKey, testid);
 	
-// 	//cout << "Key should be 19: " << myKey << endl;
-// 	//cout << "pid should be 9: " << testid.pid << " eid should be 9: " << testid.sid << endl;
+	//cout << "Key should be 19: " << myKey << endl;
+	//cout << "pid should be 9: " << testid.pid << " eid should be 9: " << testid.sid << endl;
 
-// 	myIndex.close();
-// }
+	myIndex.close();
+}
 
 int main()
 {
   // run the SQL engine taking user commands from standard input (console).
-  SqlEngine::run(stdin);
+  //SqlEngine::run(stdin);
 
   	//test();
   	//test2();
@@ -445,6 +445,6 @@ int main()
 	//test8();
 	//test9();
 	//test10();
-	//test11();
+	test11();
   return 0;
 }

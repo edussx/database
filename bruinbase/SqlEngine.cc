@@ -47,16 +47,55 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   int    count;
   int    diff;
   bool ifIndex = false;
+  int keyMin, keyMax;
+  SelCond tmp;
 
   for (unsigned i = 0; i < cond.size(); i++)
   {
     if (cond[i].attr == 1)
-      key_cond.push_back(cond[i]);
-    if (cond[i].attr == 2)
+    {
+      switch (cond[i].comp)
+      {
+          case SelCond::EQ:
+        tmp = cond[i];
+        tmp.comp = SelCond::LT;
+        tmp.value++;
+        key_cond.push_back(tmp);
+
+        tmp = cond[i];
+        tmp.comp = SelCond::GE;
+        key_cond.push_back(tmp);
+        break;
+            case SelCond::NE:
+        value_cond.push_back(cond[i]);
+        break;
+            case SelCond::GT:
+        tmp = cond[i];
+        tmp.comp = SelCond::GE;
+        tmp.value++;
+        key_cond.push_back(tmp);
+        break;
+            case SelCond::LT:
+        key_cond.push_back(cond[i]);
+        break;
+            case SelCond::GE:
+        key_cond.push_back(cond[i]);
+        break;
+            case SelCond::LE:
+        tmp = cond[i];
+        tmp.comp = SelCond::LT:
+        tmp.value++;
+        key_cond.push_back(tmp);
+      }
+    }
+    else
       value_cond.push_back(cond[i]);
   }
 
+  for (unsigned i = 0; i < cond.size(); i++)
+  {
 
+  }
 
   if ((rc = treeindex.open(table + ".idx", 'r')) == 0) ifIndex = true;
   if (cond.size() == 0 ) ifIndex = false;

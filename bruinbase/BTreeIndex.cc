@@ -92,28 +92,28 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
 	if (rootPid == -1)
 	{
 		//pid 0 is reserved for rootPid and treeHeight
-
 		rootPid = 1; //pp: wrong here, rootPid is a data member
-		//PageId lpid = 2;
-		// PageId rpid = 3;
+/*
+		PageId lpid = 2;
+		PageId rpid = 3;
 
-		// //write leftnode, which is empty at initialization
-		// rc = leftleaf.setNextNodePtr(rpid);
-		// if (rc != 0) return rc;
-		// rc = leftleaf.write(lpid, pf);
-		// if (rc != 0) return rc;
-		// //write rightnode
-		// rc = rightleaf.insert(key, rid); 
-		// if (rc != 0) return rc;
-		// rc = rightleaf.write(rpid, pf);
-		// if (rc != 0) return rc;
-		// //init root
-		// rc = root.initializeRoot(lpid, key, rpid);
-		// if (rc != 0) return rc;
-		// //write root
-		// rc = root.write(rootPid, pf);
-		// if (rc != 0) return rc;
-
+		//write leftnode, which is empty at initialization
+		rc = leftleaf.setNextNodePtr(rpid);
+		if (rc != 0) return rc;
+		rc = leftleaf.write(lpid, pf);
+		if (rc != 0) return rc;
+		//write rightnode
+		rc = rightleaf.insert(key, rid); 
+		if (rc != 0) return rc;
+		rc = rightleaf.write(rpid, pf);
+		if (rc != 0) return rc;
+		//init root
+		rc = root.initializeRoot(lpid, key, rpid);
+		if (rc != 0) return rc;
+		//write root
+		rc = root.write(rootPid, pf);
+		if (rc != 0) return rc;
+*/
 		if(rc = leaf_root.insert(key, rid))//insert the key rid to the leaf_root
 			return rc;
 		if(rc = leaf_root.write(rootPid, pf))//write back the leaf root
