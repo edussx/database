@@ -47,7 +47,8 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   int    count;
   int    diff;
   bool ifIndex = false;
-  int keyMin, keyMax;
+  int keyMin = -2147483647; //min int
+  int keyMax = 2147483647;  //max int
   SelCond tmp;
 
   for (unsigned i = 0; i < cond.size(); i++)
@@ -83,9 +84,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         break;
             case SelCond::LE:
         tmp = cond[i];
-        tmp.comp = SelCond::LT:
+        tmp.comp = SelCond::LT;
         tmp.value++;
         key_cond.push_back(tmp);
+        break;
       }
     }
     else
@@ -94,7 +96,16 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
   for (unsigned i = 0; i < cond.size(); i++)
   {
-
+    if (cond[i].comp == SelCond::LT)
+    {
+      if (atoi(cond[i].value) < keyMax)
+        keyMax = atoi(cond[i].value);
+    }
+    if (cond[i].comp == SelCond::GE)
+    {
+      if (atoi(cond[i].value) > keyMin)
+        keyMin = atoi(cond[i].value);
+    }
   }
 
   if ((rc = treeindex.open(table + ".idx", 'r')) == 0) ifIndex = true;

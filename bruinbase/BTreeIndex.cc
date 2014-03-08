@@ -36,7 +36,7 @@ RC BTreeIndex::open(const string& indexname, char mode)
 	char buffer[PageFile::PAGE_SIZE];
 
 	rc = pf.open(indexname, mode);
-	//if (rc != 0) return rc;
+	//cout << "rc is: " << rc << endl;
 	if (rc == 0 && mode == 'r')
 	{
 			/*
@@ -47,7 +47,7 @@ RC BTreeIndex::open(const string& indexname, char mode)
 			rootPid treeHeight
 			*/
 			rc = pf.read(0, buffer);
-			//cout << "rc is: " << rc << endl;
+
 			if (rc == 0)
 			{
 				memcpy(&rootPid, buffer, sizeof(PageId));
