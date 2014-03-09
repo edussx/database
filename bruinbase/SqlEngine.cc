@@ -12,7 +12,6 @@
 #include <fstream>
 #include "Bruinbase.h"
 #include "SqlEngine.h"
-#include <assert>
 
 using namespace std;
 
@@ -58,12 +57,15 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
  //char m_temp[32];
   int comp_value;
 
+  //ready to print out
+  fprintf(stdout,"\n");
+
   for (unsigned i = 0; i < cond.size(); i++)
   {
-    cout<<"cond info: i , attr, comp, value "<<i<<" "<<cond[i].attr<<" "<<cond[i].comp<<" "<<cond[i].value<<endl;
+    //cout<<"cond info: i , attr, comp, value "<<i<<" "<<cond[i].attr<<" "<<cond[i].comp<<" "<<cond[i].value<<endl;
     if (cond[i].attr == 1)
     {
-      cout<<"cond info: i , comp, value "<<i<<" "<<cond[i].comp<<" "<<cond[i].value<<endl;
+      //cout<<"cond info: i , comp, value "<<i<<" "<<cond[i].comp<<" "<<cond[i].value<<endl;
       comp_value = atoi(cond[i].value);
       //TODO
       switch (cond[i].comp)
@@ -74,7 +76,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             if(comp_value + 1 < keyMax)
               keyMax = comp_value + 1;
 
-        //   cout<<"Hello Yeah "<<endl;
+        //   //cout<<"Hello Yeah "<<endl;
         // //strcpy(tmp.value, cond[i].value);
         //  tmp.comp = SelCond::LT;
         //  a = atoi(cond[i].value); a++;
@@ -82,7 +84,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         //  sprintf(m_temp, "%d", a);
         //  strcpy(tmp.value, m_temp);
         //  key_cond.push_back(tmp);
-        //  cout << "LT a: " << a;
+        //  //cout << "LT a: " << a;
 
 
         // tmp.comp = SelCond::GE;
@@ -91,7 +93,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         //  sprintf(m_temp, "%d", a);
         //  strcpy(tmp.value, m_temp);
         // key_cond.push_back(tmp);
-        // cout << "GE a: " << a;
+        // //cout << "GE a: " << a;
         break;
 
             case SelCond::NE:
@@ -101,7 +103,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         break;
 
             case SelCond::GT:
-        //     cout<<"here "<<endl;
+        //     //cout<<"here "<<endl;
         // //TODO
         // //strcpy(tmp.value, cond[i].value);
         // tmp.comp = SelCond::GE;
@@ -116,7 +118,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         break;
             case SelCond::LT:
         // key_cond.push_back(cond[i]);
-        // cout<< cond[i].comp<<endl;
+        // //cout<< cond[i].comp<<endl;
             if(comp_value < keyMax)
               keyMax = comp_value;
         break;
@@ -155,11 +157,13 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   //   }
   // }
 
-  cout << "key min: " << keyMin << endl;
-  cout << "key max: " << keyMax << endl;
+  //cout << "key min: " << keyMin << endl;
+  //cout << "key max: " << keyMax << endl;
 
   //if (keyMin >= keyMax) return 0;
-  if (keyMin >= keyMax || keyMax<= getMin || keyMin>= getMax + 1) return 0;//new change
+  if (keyMin >= keyMax)
+  return 0;
+  //new change
 
   int getMin, getMax, getCount;
   if ((rc = treeindex.open(table + ".idx", 'r')) == 0)
@@ -171,7 +175,11 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         ((attr == 4 || attr == 1) && value_cond.empty())//no need to read value
       )//new change
       ifIndex = true;
-
+    if (keyMax<= getMin || keyMin>= getMax + 1) 
+    {
+      treeindex.close();
+      return 0;
+    }
     if(attr == 4 && key_cond.empty() && value_cond.empty() && (keyMin <= getMin) &&(keyMax > getMax))
       {
         fprintf(stdout, "%d\n", getCount);
@@ -183,9 +191,9 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   else
     ifIndex = false;
     
-  cout << "get min: " << getMin << endl;
-  cout << "get max: " << getMax << endl;
-  cout << "ifIndex: " << ifIndex << endl;
+  //cout << "get min: " << getMin << endl;
+  //cout << "get max: " << getMax << endl;
+  //cout << "ifIndex: " << ifIndex << endl;
   //use non-index-based select
   if (!ifIndex)
   {
@@ -267,8 +275,8 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       fprintf(stdout, "%d\n", count);
     }
     rc = 0;
+    rf.close();
   }
-
 
   //use index-based select
   else
@@ -284,31 +292,40 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
     rc = treeindex.locate(keyMin, start_cursor);
     if (rc != 0) return rc;
-    cout << "start cursor: " << start_cursor.pid << "  start curssor:  " << start_cursor.eid << endl;
+    //cout << "start cursor: " << start_cursor.pid << "  start curssor:  " << start_cursor.eid << endl;
     rc = treeindex.locate(keyMax, end_cursor);
-    cout << "end cursor: " << end_cursor.pid << "  end curssor:  " << end_cursor.eid << endl;
+    //cout << "end cursor: " << end_cursor.pid << "  end curssor:  " << end_cursor.eid << endl;
     //rc = treeindex.readForward(cursor, key, rid);
-    if (rc != 0) return rc;
+    //if (rc != 0) return rc;
 
 
-    for( cursor.pid= start_cursor.pid, cursor.eid = start_cursor.eid;
-      cursor.pid != end_cursor.pid || cursor.eid != end_cursor.eid; )
-    {
-      if(rc = treeindex.readForward(cursor, key, rid))
-        return rc;
-      cout<<"info: key, pid, sid are "<<key<<" "<<cursor.pid<<" "<<cursor.eid<<endl;
+    // for( cursor.pid= start_cursor.pid, cursor.eid = start_cursor.eid;
+    //   cursor.pid != end_cursor.pid || cursor.eid != end_cursor.eid; )
+    // {
+    //   if(rc = treeindex.readForward(cursor, key, rid))
+    //     return rc;
+    //   //cout<<"info: key, pid, sid are "<<key<<" "<<cursor.pid<<" "<<cursor.eid<<endl;
 
       //new change here to reduce IO
       //when select key or select count, and value condition is empty
-      if((attr == 4 || attr == 1) && value_cond.empty())//no need to go to read out value
+      //cout<<"attr is "<<attr<<endl;
+    if((attr == 4 || attr == 1) && value_cond.empty())//no need to go to read out value
+    {
+      for( cursor.pid= start_cursor.pid, cursor.eid = start_cursor.eid;
+        cursor.pid != end_cursor.pid || cursor.eid != end_cursor.eid; )
       {
+        if(rc = treeindex.readForward(cursor, key, rid))
+          return rc;
+        //cout<<"info: key, pid, sid are "<<key<<" "<<cursor.pid<<" "<<cursor.eid<<endl;
+        //cout<<"mark here dare you come here !"<<endl;
+
         for(unsigned i = 0; i < key_cond.size(); i++)
         {
           //no switch (key_cond[i].attr) here , because all are key cond
           diff = key - atoi(key_cond[i].value);
           //no switch key_cond[i].comp here, because all are NE comp
-          assert(key_cond[i].comp == SelCond::NE);
-          if (diff == 0) goto next_tuple0;//condition not met, not count and not print
+          //assert(key_cond[i].comp == SelCond::NE);
+          if (diff == 0) goto next_tuple1;//condition not met, not count and not print
 
         }
         //condition met, count ++ and if select key, print out the key
@@ -316,17 +333,35 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         if(attr == 1)
           fprintf(stdout, "%d\n", key);
         //task finish, go to next tuple0
-        goto next_tuple0;
+        next_tuple1:
+        ;
+      }
+      if (attr == 4) 
+      {
+        fprintf(stdout, "%d\n", count);
+      }
+      treeindex.close();
+
+    }
+
+    else//either select * or select value or value condition is not empty
+    {
+      // open the table file
+      //cout<<"mark here "<<endl;
+      if ((rc = rf.open(table + ".tbl", 'r')) < 0) 
+      {
+        fprintf(stderr, "Error: table %s does not exist\n", table.c_str());
+        //cout<<"mark rc "<< rc<<endl;
+        return rc;
       }
 
-      else//either select * or select value or value condition is not empty
+
+      for( cursor.pid= start_cursor.pid, cursor.eid = start_cursor.eid;
+        cursor.pid != end_cursor.pid || cursor.eid != end_cursor.eid; )
       {
-        // open the table file
-        if ((rc = rf.open(table + ".tbl", 'r')) < 0) 
-        {
-          fprintf(stderr, "Error: table %s does not exist\n", table.c_str());
+        if(rc = treeindex.readForward(cursor, key, rid))
           return rc;
-        }
+        //cout<<"info: key, pid, sid are "<<key<<" "<<cursor.pid<<" "<<cursor.eid<<endl;
 
         if ((rc = rf.read(rid, key, value)) < 0) 
         {
@@ -343,26 +378,14 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
           if (diff == 0) goto next_tuple0;//condition not met, not count and not print
         }
         // check the conditions on the tuple, seconc for value_cond
-        cout << "size: " << value_cond.size() << endl;
+        //cout << "size: " << value_cond.size() << endl;
         for (unsigned i = 0; i < value_cond.size(); i++) 
         {
           // compute the difference between the tuple value and the value_condition value
-          
-          // switch (value_cond[i].attr) 
-          // {
-          //       case 1:
-          //   diff = key - atoi(value_cond[i].value);
-          //   break;
-          //       case 2:
-          //   diff = strcmp(value.c_str(), value_cond[i].value);
-          //   break;
-          // }
-
-          //no switch (value_cond[i].attr) here , because all are value cond
           diff = strcmp(value.c_str(), value_cond[i].value);
 
-            cout << "diff: " << diff << endl;
-            cout << "comp: " << value_cond[i].comp << endl;
+            //cout << "diff: " << diff << endl;
+            //cout << "comp: " << value_cond[i].comp << endl;
           // skip the tuple if any value_condition is not met
           switch (value_cond[i].comp) 
           {
@@ -386,12 +409,11 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             break;
           }
         }
-
-        // the condition is met for the tuple. 
-        // increase matching tuple counter
+          // the condition is met for the tuple. 
+          // increase matching tuple counter
         count++;
 
-              // print the tuple 
+            // print the tuple 
         switch (attr) 
         {
             case 1:  // SELECT key
@@ -404,27 +426,30 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
               fprintf(stdout, "%d '%s'\n", key, value.c_str());
               break;
         }
-
+      
+        next_tuple0:
+        ;  
       }
+    
+        //rc = treeindex.readForward(cursor, key, rid);
+      //}
 
-      next_tuple0:
-      ;
-      //rc = treeindex.readForward(cursor, key, rid);
+       // print matching tuple count if "select count(*)"
+      if (attr == 4) 
+      {
+        fprintf(stdout, "%d\n", count);
+      }
+      rc = 0;
+      //cout << endl;
+      rf.close();
+      treeindex.close();
     }
-
-     // print matching tuple count if "select count(*)"
-    if (attr == 4) {
-      fprintf(stdout, "%d\n", count);
-    }
-    rc = 0;
-    cout << endl;
-    treeindex.close();
   }
 
 
   // close the table file and return
   exit_select:
-  rf.close();
+  
   return rc;
 }
 
@@ -443,7 +468,7 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
   if (index == true)
   {
     rc = treeindex.open(table + ".idx", 'w');
-    //cout << "mark 0" << endl;
+    ////cout << "mark 0" << endl;
     if (rc != 0) {treeindex.close(); return rc;}  
   }
 
@@ -461,14 +486,14 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
     //Get the last record id. Note rid is an instant of class RecordId
     parseLoadLine(line, key, value);
     rc = rf.append(key, value, rid);
-    //cout << "mark 1" << endl;
+    ////cout << "mark 1" << endl;
     if (rc != 0) return rc;
     if (index == true)
     {
       //rc = treeindex.open(table + ".idx", 'w');
       //if (rc != 0) return rc;  
       rc = treeindex.insert(key, rid);
-      //cout << "mark 2" << endl;
+      ////cout << "mark 2" << endl;
       if (rc != 0) return rc;
       //treeindex.close();
     }

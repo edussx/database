@@ -305,7 +305,8 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     {
     	cursor.eid = 0;
     	cursor.pid = leaf.getNextNodePtr();
-    	if (cursor.pid == -1) return RC_END_OF_TREE; 
+    	if (cursor.pid == -1) //return RC_END_OF_TREE;
+    		return 0; 
     }
     //else, cursor.pid no change, cursor.eid no change
     return 0;
