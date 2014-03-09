@@ -194,6 +194,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   //cout << "get min: " << getMin << endl;
   //cout << "get max: " << getMax << endl;
   //cout << "ifIndex: " << ifIndex << endl;
+  //cout << "mark condition "<<((attr == 4 || attr == 1) && value_cond.empty())<<endl;
   //use non-index-based select
   if (!ifIndex)
   {
@@ -285,7 +286,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     IndexCursor start_cursor;
     IndexCursor end_cursor;
 
-
+    //cout<<"mark comes to the index"<<endl;
     // scan the table file from the beginning
     rid.pid = rid.sid = 0;
     count = 0;
@@ -309,13 +310,20 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       //new change here to reduce IO
       //when select key or select count, and value condition is empty
       //cout<<"attr is "<<attr<<endl;
+
     if((attr == 4 || attr == 1) && value_cond.empty())//no need to go to read out value
     {
+      //cout<<"mark to use index to get count"<<endl;
       for( cursor.pid= start_cursor.pid, cursor.eid = start_cursor.eid;
         cursor.pid != end_cursor.pid || cursor.eid != end_cursor.eid; )
       {
+        //cout<<"mark before readForward"<<endl;
         if(rc = treeindex.readForward(cursor, key, rid))
+        {
+          //cout<<"error code is "<<rc<<endl;
           return rc;
+        }
+        //cout<<"mark after readForward"<<endl;
         //cout<<"info: key, pid, sid are "<<key<<" "<<cursor.pid<<" "<<cursor.eid<<endl;
         //cout<<"mark here dare you come here !"<<endl;
 
@@ -336,6 +344,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         next_tuple1:
         ;
       }
+      //cout<<"mark comes here"<<endl;
       if (attr == 4) 
       {
         fprintf(stdout, "%d\n", count);
