@@ -27,6 +27,7 @@ Peipei coded BTreeIndex::locate(), BTreeIndex::readForward(), BTreeIndex::recIns
 we slightly modified BTreeNode.cc and believed the change is less than 50%
 
 Part D:
+We used 1(one) grace day.
 We coded together.
 
 We modified BTreeIndex class and now it can return the max and min key in the index.
