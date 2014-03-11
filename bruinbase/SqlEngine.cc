@@ -162,7 +162,13 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
   //if (keyMin >= keyMax) return 0;
   if (keyMin >= keyMax)
-  return 0;
+  {
+    if(attr == 4)//if it for count(*)
+    {
+      fprintf(stdout, "%d\n", 0);
+    }
+    return 0;
+  }
   //new change
 
   int getMin, getMax, getCount;
@@ -177,6 +183,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       ifIndex = true;
     if (keyMax<= getMin || keyMin>= getMax + 1) 
     {
+      if(attr == 4)//if it for count(*)
+      {
+        fprintf(stdout, "%d\n", 0);
+      }
       treeindex.close();
       return 0;
     }
